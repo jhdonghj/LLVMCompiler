@@ -31,3 +31,5 @@ bin/
 
 files
 doc*
+*.txt
+*.zip

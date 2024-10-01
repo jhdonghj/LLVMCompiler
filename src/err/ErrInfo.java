@@ -1,6 +1,6 @@
 package err;
 
-public class ErrInfo {
+public class ErrInfo implements Comparable<ErrInfo> {
     public ErrType type;
     public int line;
 
@@ -11,5 +11,9 @@ public class ErrInfo {
 
     public String toString() {
         return String.format("%d %s", line, type);
+    }
+
+    public int compareTo(ErrInfo other) {
+        return this.line - other.line;
     }
 }

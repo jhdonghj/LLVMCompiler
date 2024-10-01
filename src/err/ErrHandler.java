@@ -7,9 +7,20 @@ import java.util.ArrayList;
 
 public class ErrHandler {
     private static ArrayList<ErrInfo> errors = new ArrayList<ErrInfo>();
+    private static boolean isOpen = true;
+
+    public static void close() {
+        isOpen = false;
+    }
+
+    public static void open() {
+        isOpen = true;
+    }
 
     public static void addError(ErrInfo error) {
-        errors.add(error);
+        if (isOpen) {
+            errors.add(error);
+        }
     }
 
     public static boolean hasErr() {
@@ -17,9 +28,10 @@ public class ErrHandler {
     }
 
     public static void printErrs() {
-        IO.clearFile(Config.errorFile);
+        errors.sort(null);
+        IO.setOut(Config.errorFile);
         for (ErrInfo err : errors) {
-            IO.write(Config.errorFile, err.toString() + '\n');
+            IO.writeln(err.toString());
         }
     }
 }

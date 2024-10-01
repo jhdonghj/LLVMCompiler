@@ -1,12 +1,7 @@
 package astGen;
 
-import config.Config;
-import err.ErrHandler;
-import err.ErrInfo;
-import err.ErrType;
-import token.Token;
-import token.TokenType;
-import utils.IO;
+import err.*;
+import token.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,19 +45,19 @@ public class Lexer {
         while(i < input.length()) {
             char c = input.charAt(i);
             char nc = i + 1 < input.length() ? input.charAt(i + 1) : 0;
-            if (blockComment) {
+            if(c == ' ' || c == '\t' || c == '\n' || c == '\r') {
+                if (c == '\n') {
+                    atLine++;
+                    lineComment = false;
+                }
+                i++;
+            } else if (blockComment) {
                 if (c == '*' && nc == '/') {
                     blockComment = false;
                     i += 2;
                 } else {
                     i++;
                 }
-            } else if(c == ' ' || c == '\t' || c == '\n' || c == '\r') {
-                if (c == '\n') {
-                    atLine++;
-                    lineComment = false;
-                }
-                i++;
             } else if (lineComment) {
                 i++;
             } else if (c == '/') {
@@ -170,12 +165,5 @@ public class Lexer {
             }
         }
         return tokens;
-    }
-
-    public static void printTokens(ArrayList<Token> tokens) {
-        IO.clearFile(Config.lexerOutputFile);
-        for(Token token : tokens) {
-            IO.write(Config.lexerOutputFile, token.toString() + '\n');
-        }
     }
 }

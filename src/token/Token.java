@@ -1,5 +1,7 @@
 package token;
 
+import utils.IO;
+
 public class Token {
     public TokenType type;
     public String value;
@@ -13,5 +15,9 @@ public class Token {
 
     public String toString() {
         return String.format("%s %s", type, value);
+    }
+
+    public void print() {
+        IO.writeln(toString());
     }
 }
