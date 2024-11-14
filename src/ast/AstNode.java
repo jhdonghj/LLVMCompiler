@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 public class AstNode {
     public AstType type;
+    public int subType;
     public int line;
     public int lstLine;
     public Token token;
@@ -28,6 +29,14 @@ public class AstNode {
     public void add(AstNode node) {
         sons.add(node);
         lstLine = node.lstLine;
+    }
+
+    public AstNode get(int i) {
+        return i >= 0 ? sons.get(i) : sons.get(sons.size() + i);
+    }
+
+    public int size() {
+        return sons.size();
     }
 
     public void print() {

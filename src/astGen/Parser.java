@@ -34,6 +34,7 @@ public class Parser {
             pushToken(node, token);
         } else {
             ErrHandler.addError(errInfo);
+            node.add(new AstNode(token));
         }
     }
 
@@ -136,7 +137,7 @@ public class Parser {
     private static AstNode ConstInitVal() {
         AstNode node = new AstNode(AstType.ConstInitVal, now.line);
         if (now.type == singleType('{')) {
-            pushToken(node, now); // P
+            pushToken(node, now); // {
             if (now.type != singleType('}')) {
                 node.add(ConstExp());
                 while (now.type == singleType(',')) {
@@ -273,6 +274,7 @@ public class Parser {
     private static AstNode Stmt() {
         AstNode node = new AstNode(AstType.Stmt, now.line);
         if (now.type == TokenType.IFTK) {
+            node.subType = 1;
             pushToken(node, now); // if
             pushToken(node, now); // (
             node.add(Cond());
@@ -283,6 +285,7 @@ public class Parser {
                 node.add(Stmt());
             }
         } else if (now.type == TokenType.FORTK) {
+            node.subType = 2;
             pushToken(node, now); // for
             pushToken(node, now); // (
             if (now.type != singleType(';')) {
@@ -299,11 +302,14 @@ public class Parser {
             pushToken(node, now); // )
             node.add(Stmt());
         } else if (now.type == TokenType.BREAKTK || now.type == TokenType.CONTINUETK) {
+            node.subType = 3;
             pushToken(node, now);
             pushToken(node, now, singleType(';'), new ErrInfo(ErrType.i, node.lstLine));
         } else if (now.type == singleType('{')) {
+            node.subType = 4;
             node.add(Block());
         } else if (now.type == TokenType.PRINTFTK) {
+            node.subType = 5;
             pushToken(node, now); // printf
             pushToken(node, now); // (
             pushToken(node, now); // stringConst
@@ -314,6 +320,7 @@ public class Parser {
             pushToken(node, now, singleType(')'), new ErrInfo(ErrType.j, node.lstLine));
             pushToken(node, now, singleType(';'), new ErrInfo(ErrType.i, node.lstLine));
         } else if (now.type == TokenType.RETURNTK) {
+            node.subType = 6;
             pushToken(node, now); // return
             if (expFirst()) {
                 node.add(Exp());
@@ -334,21 +341,25 @@ public class Parser {
                 node.add(LVal()); // rerun to make ErrHandler work
                 pushToken(node, now); // =
                 if (now.type == TokenType.GETINTTK || now.type == TokenType.GETCHARTK) {
+                    node.subType = 8;
                     pushToken(node, now); // getInt / getChar
                     pushToken(node, now); // (
                     pushToken(node, now, singleType(')'), new ErrInfo(ErrType.j, node.lstLine));
                     pushToken(node, now, singleType(';'), new ErrInfo(ErrType.i, node.lstLine));
                 } else {
+                    node.subType = 9;
                     node.add(Exp());
                     pushToken(node, now, singleType(';'), new ErrInfo(ErrType.i, node.lstLine));
                 }
             } else {
                 // it is not LVal but Exp, go back and parse Exp
                 // one LVal can be parsed at most two times so it is still O(n)
+                node.subType = 7;
                 node.add(Exp());
                 pushToken(node, now, singleType(';'), new ErrInfo(ErrType.i, node.lstLine));
             }
         } else {
+            node.subType = 7;
             if (expFirst()) {
                 node.add(Exp());
             }

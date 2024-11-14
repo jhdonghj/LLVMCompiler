@@ -1,7 +1,9 @@
 package utils;
 
+import analyse.Analyse;
 import ast.AstNode;
 import config.Config;
+import ir.Value;
 import token.Token;
 
 import java.nio.file.Files;
@@ -9,6 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class IO {
@@ -62,6 +65,7 @@ public class IO {
     public static void initAllFiles() {
         setOut(Config.lexerOutputFile);
         setOut(Config.parserOutputFile);
+        setOut(Config.symbolOutputFile);
         setOut(Config.errorFile);
     }
 
@@ -75,5 +79,17 @@ public class IO {
     public static void printAst(AstNode root) {
         setOut(Config.parserOutputFile);
         root.print();
+    }
+
+    public static ArrayList<Analyse.Symbol> symbols = new ArrayList<>();
+    public static void addSymbol(Analyse.Symbol symbol) {
+        symbols.add(symbol);
+    }
+    public static void printSymbols() {
+        symbols.sort(Comparator.comparingInt(s -> s.scope_id));
+        setOut(Config.symbolOutputFile);
+        for (Analyse.Symbol sym : symbols) {
+            writeln(String.format("%d %s %s", sym.scope_id, sym.name, sym.type));
+        }
     }
 }
