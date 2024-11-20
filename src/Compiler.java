@@ -4,6 +4,7 @@ import astGen.Lexer;
 import astGen.Parser;
 import config.Config;
 import err.ErrHandler;
+import ir.Program;
 import irGen.IrGen;
 import token.Token;
 import utils.IO;
@@ -29,6 +30,10 @@ public class Compiler {
         if (ErrHandler.hasErr()) {
             ErrHandler.printErrs();
             return;
+        }
+        Program program = IrGen.generate(ast);
+        if (Config.taskType == Config.TaskType.IR) {
+            IO.printIr(program);
         }
     }
 }

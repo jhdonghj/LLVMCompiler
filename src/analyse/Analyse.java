@@ -521,7 +521,7 @@ public class Analyse {
         }
     }
 
-    public static SymType ConstExp(AstNode ast) {
-        return AddExp(ast.get(0));
+    public static void ConstExp(AstNode ast) {
+        AddExp(ast.get(0));
     }
 }

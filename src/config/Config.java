@@ -5,25 +5,28 @@ import java.nio.file.Paths;
 
 public class Config {
     public enum TaskType {
-        LEXER, PARSER, SYMBOL
+        LEXER, PARSER, SYMBOL, IR
     }
 
     public static String inputFile = "testfile.txt";
+    public static String errorFile = "error.txt";
+
     public static String lexerOutputFile = "lexer.txt";
     public static String parserOutputFile = "parser.txt";
     public static String symbolOutputFile = "symbol.txt";
-    public static String errorFile = "error.txt";
+    public static String llvmOutputFile = "llvm_ir.txt";
 
-    public static TaskType taskType = TaskType.SYMBOL;
+    public static TaskType taskType = TaskType.IR;
 
     public static void initialize() {
         if (Files.exists(Paths.get(inputFile))) {
             return;
         }
         inputFile = "files/" + inputFile;
+        errorFile = "files/" + errorFile;
         lexerOutputFile = "files/" + lexerOutputFile;
         parserOutputFile = "files/" + parserOutputFile;
         symbolOutputFile = "files/" + symbolOutputFile;
-        errorFile = "files/" + errorFile;
+        llvmOutputFile = "files/" + llvmOutputFile;
     }
 }

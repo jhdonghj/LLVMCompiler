@@ -1,14 +1,52 @@
 package ir;
 
+import ir.type.FunctionType;
+import ir.type.Type;
+
 import java.util.ArrayList;
+
+import static irGen.IrGen.new_func;
+import static utils.IO.writeln;
 
 public class Function extends Value {
     public ArrayList<BasicBlock> bbs;
     public ArrayList<FuncParam> params;
+    public Type retType;
+    private int var_cnt;
 
-    public Function(ValueType type, String name) {
-        super(type, name);
+    public Function(Type retType, String name) {
+        super(new FunctionType(), name);
+        this.retType = retType;
         bbs = new ArrayList<>();
         params = new ArrayList<>();
+        var_cnt = 0;
+        new_func(this);
+    }
+
+    public String new_var() {
+        return "%a" + var_cnt++;
+    }
+
+    public void print() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("define dso_local ").append(retType).append(" @").append(name).append("(");
+        for (int i = 0; i < params.size(); i++) {
+            if (i > 0) {
+                sb.append(", ");
+            }
+            sb.append(params.get(i).type).append(" ").append(params.get(i).name);
+        }
+        sb.append(") {");
+        writeln(sb.toString());
+        // sort bbs
+//        bbs.sort(BasicBlock::compareTo);
+//        int now = 0;
+//        for (BasicBlock bb : bbs) {
+//            now = bb.renumber(now);
+//        }
+        for (BasicBlock bb : bbs) {
+            bb.print();
+        }
+        writeln("}");
     }
 }

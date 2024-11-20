@@ -3,6 +3,7 @@ package utils;
 import analyse.Analyse;
 import ast.AstNode;
 import config.Config;
+import ir.Program;
 import ir.Value;
 import token.Token;
 
@@ -17,9 +18,9 @@ import java.util.List;
 public class IO {
     public static Path outputFile;
 
-    public static void clearFile(String filename) {
+    public static void rmFile(String filename) {
         try {
-            Files.write(Paths.get(filename), "".getBytes());
+            Files.deleteIfExists(Paths.get(filename));
         } catch (java.io.IOException e) {
             e.printStackTrace();
         }
@@ -63,10 +64,11 @@ public class IO {
     // Output Method
 
     public static void initAllFiles() {
-        setOut(Config.lexerOutputFile);
-        setOut(Config.parserOutputFile);
-        setOut(Config.symbolOutputFile);
-        setOut(Config.errorFile);
+//        setOut(Config.lexerOutputFile);
+//        setOut(Config.parserOutputFile);
+//        setOut(Config.symbolOutputFile);
+//        setOut(Config.llvmOutputFile);
+//        setOut(Config.errorFile);
     }
 
     public static void printTokens(ArrayList<Token> tokens) {
@@ -91,5 +93,10 @@ public class IO {
         for (Analyse.Symbol sym : symbols) {
             writeln(String.format("%d %s %s", sym.scope_id, sym.name, sym.type));
         }
+    }
+
+    public static void printIr(Program program) {
+        setOut(Config.llvmOutputFile);
+        program.print();
     }
 }
