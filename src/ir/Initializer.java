@@ -59,4 +59,19 @@ public class Initializer {
             return sb.toString();
         }
     }
+
+    public String to_mips() {
+        if (!is_array) {
+            return "" + values.get(0);
+        } else {
+            StringBuilder sb = new StringBuilder();
+            for (int val : values) {
+                if (!sb.isEmpty()) {
+                    sb.append(", ");
+                }
+                sb.append(val);
+            }
+            return sb.toString();
+        }
+    }
 }

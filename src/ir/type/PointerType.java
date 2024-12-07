@@ -11,4 +11,24 @@ public class PointerType extends Type {
     public String toString() {
         return elementType + "*";
     }
+
+    @Override
+    public Type getElementType() {
+        return elementType;
+    }
+
+    @Override
+    public int getAlign() {
+        return 4;
+    }
+
+    @Override
+    public int getByte() {
+        return 4;
+    }
+
+    @Override
+    public int getSize() {
+        return 4;
+    }
 }

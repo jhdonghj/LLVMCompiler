@@ -20,4 +20,9 @@ public class ConstString extends Value {
         writeln(name + " = constant " + ((PointerType) type).elementType + " c\"" +
                 value.replaceAll("\n", "\\\\0A") + "\\00\"");
     }
+
+    public void to_mips() {
+        writeln(String.format("    %s: .asciiz \"%s\"", name.substring(1),
+                value.replaceAll("\n", "\\\\n")));
+    }
 }

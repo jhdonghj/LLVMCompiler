@@ -6,6 +6,8 @@ import ir.Value;
 import ir.type.Type;
 
 import static irGen.IrGen.new_instr;
+import static java.lang.String.format;
+import static utils.IO.writeln;
 
 public class Instr extends User {
     public BasicBlock parentBB;
@@ -18,5 +20,15 @@ public class Instr extends User {
         new_instr(this); // auto add to current basic block
     }
 
-    public void print() {}
+    public String toString() {
+        return "not implemented";
+    }
+
+    public void print() {
+        writeln(this.toString());
+    }
+
+    public void to_mips() {
+        writeln(format("    # %s", this));
+    }
 }

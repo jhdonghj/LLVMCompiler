@@ -11,7 +11,13 @@ public class Jump extends Instr {
     }
 
     @Override
-    public void print() {
-        writeln(String.format("  br label %%%s", operands.get(0).name));
+    public String toString() {
+        return String.format("  br label %%%s", operands.get(0).name);
+    }
+
+    @Override
+    public void to_mips() {
+        super.to_mips();
+        writeln(String.format("    j %s", operands.get(0).name));
     }
 }

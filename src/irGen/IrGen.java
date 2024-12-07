@@ -78,7 +78,7 @@ public class IrGen {
         return "@s_Z9_" + str_cnt++;
     }
     public static String new_global_name() {
-        return "@g_cJ-" + global_cnt++;
+        return "@g_cJ_" + global_cnt++;
     }
 
     public static ArrayList<AstNode> flatten(AstNode ast, AstType type) {
@@ -375,11 +375,11 @@ public class IrGen {
             if (ast.get(2).token.type == TokenType.GETINTTK) {
                 Value pointer = LValAssign(ast.get(0));
                 IOInstr.GetInt value = new IOInstr.GetInt(cur_func.new_var());
-                Instr instr = new Store(cur_func.new_var(), value, pointer);
+                Instr instr = new Store(cur_func.new_var(), castTo(castTo(value, INT_TYPE), ((PointerType) pointer.type).elementType), pointer);
             } else {
                 Value pointer = LValAssign(ast.get(0));
                 IOInstr.GetChar value = new IOInstr.GetChar(cur_func.new_var());
-                Instr instr = new Store(cur_func.new_var(), castTo(value, CHAR_TYPE), pointer);
+                Instr instr = new Store(cur_func.new_var(), castTo(castTo(value, CHAR_TYPE), ((PointerType) pointer.type).elementType), pointer);
             }
         } else if (ast.subType == 9) { // LVal = Exp ;
             ForStmt(ast); // same as ForStmt except the last ;

@@ -2,6 +2,8 @@ package ir;
 
 import ir.type.FunctionType;
 import ir.type.Type;
+import mipsGen.Regs;
+import mipsGen.mipsInfo;
 
 import java.util.ArrayList;
 
@@ -38,15 +40,25 @@ public class Function extends Value {
         }
         sb.append(") {");
         writeln(sb.toString());
-        // sort bbs
-//        bbs.sort(BasicBlock::compareTo);
-//        int now = 0;
-//        for (BasicBlock bb : bbs) {
-//            now = bb.renumber(now);
-//        }
         for (BasicBlock bb : bbs) {
             bb.print();
         }
         writeln("}");
+    }
+
+    public void to_mips() {
+        writeln(String.format("%s:", name));
+        mipsInfo.enter(this);
+        for (int i = 0; i < params.size(); i++) {
+            FuncParam param = params.get(i);
+            if (i <= 3) {
+                mipsInfo.value2reg.put(param, Regs.a0.get(i));
+            }
+            mipsInfo.alloc(param.type);
+            mipsInfo.value2offset.put(param, mipsInfo.cur_offset);
+        }
+        for (BasicBlock bb : bbs) {
+            bb.to_mips();
+        }
     }
 }

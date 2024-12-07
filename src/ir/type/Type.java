@@ -34,6 +34,14 @@ public class Type {
         return this instanceof BBType;
     }
 
+    public Type getElementType() { return null; }
+
+    public int getAlign() { return -1; }
+
+    public int getByte() { return -1; }
+
+    public int getSize() { return -1; }
+
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Type) {

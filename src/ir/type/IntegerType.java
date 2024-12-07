@@ -16,4 +16,19 @@ public class IntegerType extends Type {
     public String toString() {
         return bitWidth > 0 ? "i" + bitWidth : "void";
     }
+
+    @Override
+    public int getAlign() {
+        return getByte();
+    }
+
+    @Override
+    public int getByte() {
+        return bitWidth / 8;
+    }
+
+    @Override
+    public int getSize() {
+        return getByte();
+    }
 }

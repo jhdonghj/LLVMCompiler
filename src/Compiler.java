@@ -35,5 +35,9 @@ public class Compiler {
         if (Config.taskType == Config.TaskType.IR) {
             IO.printIr(program);
         }
+        if (Config.taskType == Config.TaskType.MIPS) {
+            IO.setOut(Config.mipsOutputFile);
+            program.to_mips();
+        }
     }
 }

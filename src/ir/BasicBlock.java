@@ -24,4 +24,11 @@ public class BasicBlock extends Value {
             instr.print();
         }
     }
+
+    public void to_mips() {
+        writeln(String.format("%s:", name));
+        for (Instr instr : instrs) {
+            instr.to_mips();
+        }
+    }
 }

@@ -5,7 +5,7 @@ import java.nio.file.Paths;
 
 public class Config {
     public enum TaskType {
-        LEXER, PARSER, SYMBOL, IR
+        LEXER, PARSER, SYMBOL, IR, MIPS
     }
 
     public static String inputFile = "testfile.txt";
@@ -15,8 +15,9 @@ public class Config {
     public static String parserOutputFile = "parser.txt";
     public static String symbolOutputFile = "symbol.txt";
     public static String llvmOutputFile = "llvm_ir.txt";
+    public static String mipsOutputFile = "mips.txt";
 
-    public static TaskType taskType = TaskType.IR;
+    public static TaskType taskType = TaskType.MIPS;
 
     public static void initialize() {
         if (Files.exists(Paths.get(inputFile))) {
@@ -28,5 +29,6 @@ public class Config {
         parserOutputFile = "files/" + parserOutputFile;
         symbolOutputFile = "files/" + symbolOutputFile;
         llvmOutputFile = "files/" + llvmOutputFile;
+        mipsOutputFile = "files/" + mipsOutputFile;
     }
 }

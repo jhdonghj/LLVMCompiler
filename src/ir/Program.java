@@ -46,4 +46,22 @@ public class Program {
             writeln("");
         }
     }
+
+    public void to_mips() {
+        writeln(".data");
+        for (GlobalVariable globalVariable : globalVariables) {
+            globalVariable.to_mips();
+        }
+        for (ConstString constString : constStrings) {
+            constString.to_mips();
+        }
+        writeln(".text");
+        writeln("# jump to main");
+        writeln("    jal main");
+        writeln("    j _exit");
+        for (Function function : functions) {
+            function.to_mips();
+        }
+        writeln("_exit:");
+    }
 }
