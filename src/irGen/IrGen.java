@@ -159,12 +159,14 @@ public class IrGen {
         initializer.is_array = is_array;
         if (is_global()) {
             GlobalVariable globalVariable = new GlobalVariable(
-                new PointerType(initializer.getType()), new_global_name(), initializer
+                    new PointerType(initializer.getType()), new_global_name(), initializer
             );
+            globalVariable.isConstant = true;
             new_value(ident.value, globalVariable);
         } else if (is_array) {
             Type type = getType(bType, true, size);
             Instr instr = new Allocate(cur_func.new_var(), type, initializer);
+            instr.isConstant = true;
             new_value(ident.value, instr);
             Value pointer = instr;
             for (int i = 0; i < size; i++) {
@@ -175,6 +177,7 @@ public class IrGen {
             }
         } else {
             Instr instr = new Allocate(cur_func.new_var(), baseType, initializer);
+            instr.isConstant = true;
             new_value(ident.value, instr);
             int value = initializer.get(0);
             Value val = new ConstInt(value);
@@ -226,7 +229,7 @@ public class IrGen {
             initializer.is_array = is_array;
             initializer.resize(size);
             GlobalVariable globalVariable = new GlobalVariable(
-                new PointerType(initializer.getType()), new_global_name(), initializer
+                    new PointerType(initializer.getType()), new_global_name(), initializer
             );
             new_value(ident.value, globalVariable);
         } else if (is_array) {
@@ -501,10 +504,9 @@ public class IrGen {
             return value;
         } else { // array
             Value pointer = value;
-            Type elementType = ((PointerType) pointer.type).elementType;
             Value offset = Exp(ast.get(2));
             offset = castTo(offset, INT_TYPE);
-            if (elementType.isPointer()) {
+            if (pointer.type.getElementType().isPointer()) {
                 pointer = new Load(cur_func.new_var(), pointer);
                 return new GetElementPointer(cur_func.new_var(), pointer, offset);
             } else {
@@ -518,7 +520,11 @@ public class IrGen {
         Token ident = ast.get(0).token;
         Value value = get_value(ident.value);
         if (ast.size() == 1) {
-            if (!((PointerType) value.type).elementType.isArray()) {
+            if (value.isConstant) {
+                Initializer initializer = value instanceof GlobalVariable ?
+                    ((GlobalVariable) value).initializer : ((Allocate) value).initializer;
+                return new ConstInt(initializer.get(0));
+            } else if (!((PointerType) value.type).elementType.isArray()) {
                 return new Load(cur_func.new_var(), value);
             } else { // for function parameters
                 Value pointer = value;
@@ -527,6 +533,11 @@ public class IrGen {
         } else {
             Value pointer = value;
             Value offset = Exp(ast.get(2));
+            if (pointer.isConstant && offset.isConstant) {
+                Initializer initializer = pointer instanceof GlobalVariable ?
+                    ((GlobalVariable) pointer).initializer : ((Allocate) pointer).initializer;
+                return new ConstInt(initializer.get(((ConstInt) offset).value));
+            }
             offset = castTo(offset, INT_TYPE);
             Instr instr;
             if (((PointerType) pointer.type).elementType.isPointer()) {
@@ -585,9 +596,17 @@ public class IrGen {
             if (op == TokenType.PLUS) {
                 return op1;
             } else if (op == TokenType.MINU) {
-                return new BinaryOperator(cur_func.new_var(), BinaryOperator.Op.SUB, new ConstInt(0), op1);
+                if (op1 instanceof ConstInt) {
+                    return new ConstInt(-((ConstInt) op1).value);
+                } else {
+                    return new BinaryOperator(cur_func.new_var(), BinaryOperator.Op.SUB, new ConstInt(0), op1);
+                }
             } else {
-                return new Icmp(cur_func.new_var(), Icmp.Op.EQ, castTo(op1, INT_TYPE), new ConstInt(0));
+                if (op1 instanceof ConstInt) {
+                    return new ConstInt(((ConstInt) op1).value == 0 ? 1 : 0);
+                } else {
+                    return new Icmp(cur_func.new_var(), Icmp.Op.EQ, castTo(op1, INT_TYPE), new ConstInt(0));
+                }
             }
         } else {
             Token ident = ast.get(0).token;
@@ -616,18 +635,115 @@ public class IrGen {
         return values;
     }
 
+    private static Value mult(Value op1, int val) {
+        if (val == 0) {
+            return new ConstInt(0);
+        } else if (val == 1) {
+            return op1;
+        } else if (val == -1) {
+            return new BinaryOperator(cur_func.new_var(), BinaryOperator.Op.SUB, new ConstInt(0), op1);
+        }
+        int tmp = Math.abs(val);
+        ArrayList<Integer> bits = new ArrayList<>();
+        for (int i = 0; i < 32; i++) {
+            if ((tmp & (1 << i)) != 0) bits.add(i);
+        }
+        if (bits.size() == 1) {
+            op1 = new BinaryOperator(cur_func.new_var(), BinaryOperator.Op.SLL, op1, new ConstInt(bits.get(0)));
+            if (val < 0) {
+                op1 = new BinaryOperator(cur_func.new_var(), BinaryOperator.Op.SUB, new ConstInt(0), op1);
+            }
+        } else {
+            castTo(op1, INT_TYPE);
+            op1 = new BinaryOperator(cur_func.new_var(), BinaryOperator.Op.MUL, op1, new ConstInt(val));
+        }
+        return op1;
+    }
+
+    static class MagicNumber {
+        public long M; // Magic number
+        public int sh_post; // 位移数
+        public int l;
+
+        public MagicNumber(long M, int sh_post, int l) {
+            this.M = M; this.sh_post = sh_post; this.l = l;
+        }
+    }
+    private static final int N = 32;
+    private static MagicNumber choose_multiplier(int d, int prec) {
+        int l = 1;
+        while ((1 << l) < d) l++;
+        int sh_post = l;
+        long m_low = (1L << (N + l)) / d, m_high = ((1L << (N + l)) + (1L << (N + l - prec))) / d;
+        while (m_low / 2 < m_high / 2 && sh_post > 0) {
+            m_low /= 2; m_high /= 2; sh_post--;
+        }
+        return new MagicNumber(m_high, sh_post, l);
+    }
+    private static Value div(Value n, int d) {
+        Value q = n;
+        int d_abs = Math.abs(d);
+        MagicNumber res = choose_multiplier(d_abs, N - 1);
+        if (d_abs == 1) {
+            q = n;
+        } else if (d_abs == (1 << res.l)) {
+            q = new BinaryOperator(cur_func.new_var(), BinaryOperator.Op.SRA, n, new ConstInt(res.l - 1));
+            q = new BinaryOperator(cur_func.new_var(), BinaryOperator.Op.SRL, q, new ConstInt(N - res.l));
+            q = new BinaryOperator(cur_func.new_var(), BinaryOperator.Op.ADD, n, q);
+            q = new BinaryOperator(cur_func.new_var(), BinaryOperator.Op.SRA, q, new ConstInt(res.l));
+        } else {
+            if (res.M < (1L << (N - 1))) {
+                q = new BinaryOperator(cur_func.new_var(), BinaryOperator.Op.MULSH, n, new ConstInt((int) res.M));
+                q = new BinaryOperator(cur_func.new_var(), BinaryOperator.Op.SRA, q, new ConstInt(res.sh_post));
+            } else {
+                q = new BinaryOperator(cur_func.new_var(), BinaryOperator.Op.MULSH, n, new ConstInt((int) (res.M - (1L << N))));
+                q = new BinaryOperator(cur_func.new_var(), BinaryOperator.Op.ADD, n, q);
+                q = new BinaryOperator(cur_func.new_var(), BinaryOperator.Op.SRA, q, new ConstInt(res.sh_post));
+            }
+            Value xsign = new BinaryOperator(cur_func.new_var(), BinaryOperator.Op.SRA, n, new ConstInt(N - 1));
+            q = new BinaryOperator(cur_func.new_var(), BinaryOperator.Op.SUB, q, xsign);
+        }
+        if (d < 0) {
+            q = new BinaryOperator(cur_func.new_var(), BinaryOperator.Op.SUB, new ConstInt(0), q);
+        }
+        return q;
+    }
+    private static Value rem(Value op1, int val) {
+        Value div_res = div(op1, val);
+        Value mul_res = mult(div_res, val);
+        return new BinaryOperator(cur_func.new_var(), BinaryOperator.Op.SUB, op1, mul_res);
+    }
+
     public static Value MulExp(AstNode ast) {
         ArrayList<AstNode> sons = flatten(ast, AstType.MulExp);
         Value op1 = UnaryExp(sons.get(0));
         for (int i = 1; i < sons.size(); i += 2) {
-            op1 = castTo(op1, INT_TYPE);
             Value op2 = UnaryExp(sons.get(i + 1));
-            op2 = castTo(op2, INT_TYPE);
             BinaryOperator.Op op =
-                    sons.get(i).token.type == TokenType.MULT ? BinaryOperator.Op.MUL :
-                    sons.get(i).token.type == TokenType.DIV ? BinaryOperator.Op.SDIV :
-                            BinaryOperator.Op.SREM;
-            op1 = new BinaryOperator(cur_func.new_var(), op, op1, op2);
+                sons.get(i).token.type == TokenType.MULT ? BinaryOperator.Op.MUL :
+                sons.get(i).token.type == TokenType.DIV ? BinaryOperator.Op.SDIV :
+                    BinaryOperator.Op.SREM;
+            if (op1 instanceof ConstInt && op == BinaryOperator.Op.MUL) {
+                Value temp = op1; op1 = op2; op2 = temp;
+            }
+            if (op1 instanceof ConstInt && op2 instanceof ConstInt) {
+                switch (op) {
+                    case MUL -> op1 = new ConstInt(((ConstInt) op1).value * ((ConstInt) op2).value);
+                    case SDIV -> op1 = new ConstInt(((ConstInt) op1).value / ((ConstInt) op2).value);
+                    case SREM -> op1 = new ConstInt(((ConstInt) op1).value % ((ConstInt) op2).value);
+                }
+            } else if (op2 instanceof ConstInt) {
+                int val = ((ConstInt) op2).value;
+                op1 = switch (op) {
+                    case MUL -> mult(op1, val);
+                    case SDIV -> div(op1, val);
+                    default -> rem(op1, val);
+                };
+            } else {
+                op1 = castTo(op1, INT_TYPE);
+                op2 = castTo(op2, INT_TYPE);
+                op1 = new BinaryOperator(cur_func.new_var(), op, op1, op2);
+            }
         }
         return op1;
     }
@@ -636,13 +752,20 @@ public class IrGen {
         ArrayList<AstNode> sons = flatten(ast, AstType.AddExp);
         Value op1 = MulExp(sons.get(0));
         for (int i = 1; i < sons.size(); i += 2) {
-            op1 = castTo(op1, INT_TYPE);
             Value op2 = MulExp(sons.get(i + 1));
-            op2 = castTo(op2, INT_TYPE);
             BinaryOperator.Op op =
-                    sons.get(i).token.type == TokenType.PLUS ? BinaryOperator.Op.ADD :
-                            BinaryOperator.Op.SUB;
-            op1 = new BinaryOperator(cur_func.new_var(), op, op1, op2);
+                sons.get(i).token.type == TokenType.PLUS ? BinaryOperator.Op.ADD :
+                    BinaryOperator.Op.SUB;
+            if (op1 instanceof ConstInt && op2 instanceof ConstInt) {
+                switch (op) {
+                    case ADD -> op1 = new ConstInt(((ConstInt) op1).value + ((ConstInt) op2).value);
+                    case SUB -> op1 = new ConstInt(((ConstInt) op1).value - ((ConstInt) op2).value);
+                }
+            } else {
+                op1 = castTo(op1, INT_TYPE);
+                op2 = castTo(op2, INT_TYPE);
+                op1 = new BinaryOperator(cur_func.new_var(), op, op1, op2);
+            }
         }
         return op1;
     }
@@ -651,14 +774,23 @@ public class IrGen {
         ArrayList<AstNode> sons = flatten(ast, AstType.RelExp);
         Value op1 = AddExp(sons.get(0));
         for (int i = 1; i < sons.size(); i += 2) {
-            op1 = castTo(op1, INT_TYPE);
             Value op2 = AddExp(sons.get(i + 1));
-            op2 = castTo(op2, INT_TYPE);
             Icmp.Op op = sons.get(i).token.type == TokenType.LSS ? Icmp.Op.SLT :
-                    sons.get(i).token.type == TokenType.LEQ ? Icmp.Op.SLE :
-                    sons.get(i).token.type == TokenType.GRE ? Icmp.Op.SGT :
-                            Icmp.Op.SGE;
-            op1 = new Icmp(cur_func.new_var(), op, op1, op2);
+                sons.get(i).token.type == TokenType.LEQ ? Icmp.Op.SLE :
+                sons.get(i).token.type == TokenType.GRE ? Icmp.Op.SGT :
+                    Icmp.Op.SGE;
+            if (op1 instanceof ConstInt && op2 instanceof ConstInt) {
+                switch (op) {
+                    case SLT -> op1 = new ConstInt(((ConstInt) op1).value < ((ConstInt) op2).value ? 1 : 0);
+                    case SLE -> op1 = new ConstInt(((ConstInt) op1).value <= ((ConstInt) op2).value ? 1 : 0);
+                    case SGT -> op1 = new ConstInt(((ConstInt) op1).value > ((ConstInt) op2).value ? 1 : 0);
+                    case SGE -> op1 = new ConstInt(((ConstInt) op1).value >= ((ConstInt) op2).value ? 1 : 0);
+                }
+            } else {
+                op1 = castTo(op1, INT_TYPE);
+                op2 = castTo(op2, INT_TYPE);
+                op1 = new Icmp(cur_func.new_var(), op, op1, op2);
+            }
         }
         return op1;
     }
@@ -667,11 +799,18 @@ public class IrGen {
         ArrayList<AstNode> sons = flatten(ast, AstType.EqExp);
         Value op1 = RelExp(sons.get(0));
         for (int i = 1; i < sons.size(); i += 2) {
-            op1 = castTo(op1, INT_TYPE);
             Value op2 = RelExp(sons.get(i + 1));
-            op2 = castTo(op2, INT_TYPE);
             Icmp.Op op = sons.get(i).token.type == TokenType.EQL ? Icmp.Op.EQ : Icmp.Op.NE;
-            op1 = new Icmp(cur_func.new_var(), op, op1, op2);
+            if (op1 instanceof ConstInt && op2 instanceof ConstInt) {
+                switch (op) {
+                    case EQ -> op1 = new ConstInt(((ConstInt) op1).value == ((ConstInt) op2).value ? 1 : 0);
+                    case NE -> op1 = new ConstInt(((ConstInt) op1).value != ((ConstInt) op2).value ? 1 : 0);
+                }
+            } else {
+                op1 = castTo(op1, INT_TYPE);
+                op2 = castTo(op2, INT_TYPE);
+                op1 = new Icmp(cur_func.new_var(), op, op1, op2);
+            }
         }
         return op1;
     }
@@ -706,76 +845,9 @@ public class IrGen {
         }
     }
 
-    public static int LValEval(AstNode ast) {
-        Token ident = ast.get(0).token;
-        Value value = get_value(ident.value);
-        Initializer initializer = value instanceof GlobalVariable ?
-                ((GlobalVariable) value).initializer : ((Allocate) value).initializer;
-        if (ast.size() == 1) {
-            return initializer.get(0);
-        } else {
-            int offset = ConstExp(ast.get(2));
-            return initializer.get(offset);
-        }
-    }
-
-    public static int PrimaryExpEval(AstNode ast) {
-        if (ast.size() == 3) {
-            return ConstExp(ast.get(1));
-        } else if (ast.get(0).type == AstType.LVal) {
-            return LValEval(ast.get(0));
-        } else if (ast.get(0).type == AstType.Number) {
-            return ((ConstInt) Number(ast.get(0))).value;
-        } else {
-            return ((ConstInt) Character(ast.get(0))).value;
-        }
-    }
-
-    public static int UnaryExpEval(AstNode ast) {
-        if (ast.get(0).type == AstType.PrimaryExp) {
-            return PrimaryExpEval(ast.get(0));
-        } else {
-            TokenType op = UnaryOp(ast.get(0));
-            int res = UnaryExpEval(ast.get(1));
-            if (op == TokenType.PLUS) {
-                return res;
-            } else if (op == TokenType.MINU) {
-                return -res;
-            } else {
-                return res == 0 ? 1 : 0;
-            }
-        }
-    }
-
-    public static int MulExpEval(AstNode ast) {
-        ArrayList<AstNode> sons = flatten(ast, AstType.MulExp);
-        int res = UnaryExpEval(sons.get(0));
-        for (int i = 1; i < sons.size(); i += 2) {
-            if (sons.get(i).token.type == TokenType.MULT) {
-                res *= UnaryExpEval(sons.get(i + 1));
-            } else if (sons.get(i).token.type == TokenType.DIV) {
-                res /= UnaryExpEval(sons.get(i + 1));
-            } else {
-                res %= UnaryExpEval(sons.get(i + 1));
-            }
-        }
-        return res;
-    }
-
-    public static int AddExpEval(AstNode ast) {
-        ArrayList<AstNode> sons = flatten(ast, AstType.AddExp);
-        int res = MulExpEval(sons.get(0));
-        for (int i = 1; i < sons.size(); i += 2) {
-            if (sons.get(i).token.type == TokenType.PLUS) {
-                res += MulExpEval(sons.get(i + 1));
-            } else {
-                res -= MulExpEval(sons.get(i + 1));
-            }
-        }
-        return res;
-    }
-
     public static int ConstExp(AstNode ast) {
-        return AddExpEval(ast.get(0));
+        Value exp = AddExp(ast.get(0));
+        assert exp instanceof ConstInt;
+        return ((ConstInt) exp).value;
     }
 }

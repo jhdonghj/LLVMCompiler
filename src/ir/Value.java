@@ -8,11 +8,13 @@ public class Value {
     public ArrayList<Use> useList;
     public Type type;
     public String name;
+    public boolean isConstant;
 
     public Value(Type type, String name) {
         useList = new ArrayList<>();
         this.type = type;
         this.name = name;
+        isConstant = false;
     }
 
     public void addUse(User user) {

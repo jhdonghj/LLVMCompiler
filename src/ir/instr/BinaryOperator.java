@@ -11,7 +11,7 @@ import static mipsGen.mipsInfo.loadValue;
 
 public class BinaryOperator extends Instr {
     public enum Op {
-        ADD, SUB, MUL, SDIV, SREM, AND, OR
+        ADD, SUB, MUL, SDIV, SREM, AND, OR, XOR, SLL, SRL, SRA, MULSH
     }
 
     public Op op;
@@ -62,8 +62,24 @@ public class BinaryOperator extends Instr {
             case OR:
                 writeln(String.format("    or $%s, $%s, $%s", target, reg1, reg2));
                 break;
+            case XOR:
+                writeln(String.format("    xor $%s, $%s, $%s", target, reg1, reg2));
+                break;
+            case SLL:
+                writeln(String.format("    sllv $%s, $%s, $%s", target, reg1, reg2));
+                break;
+            case SRL:
+                writeln(String.format("    srlv $%s, $%s, $%s", target, reg1, reg2));
+                break;
+            case SRA:
+                writeln(String.format("    srav $%s, $%s, $%s", target, reg1, reg2));
+                break;
+            case MULSH:
+                writeln(String.format("    mult $%s, $%s", reg1, reg2));
+                writeln(String.format("    mfhi $%s", target));
+                break;
         }
-        if (!mipsInfo.value2offset.containsKey(this)) {
+        if (!mipsInfo.value2reg.containsKey(this)) {
             mipsInfo.alloc(new PointerType(INT_TYPE));
             mipsInfo.value2offset.put(this, mipsInfo.cur_offset);
             writeln(String.format("    sw $%s, %d($sp)", target, mipsInfo.value2offset.get(this)));

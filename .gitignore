@@ -33,3 +33,4 @@ files
 doc*
 *.txt
 *.zip
+src/test.java
