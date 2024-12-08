@@ -634,86 +634,7 @@ public class IrGen {
         }
         return values;
     }
-
-    private static Value mult(Value op1, int val) {
-        if (val == 0) {
-            return new ConstInt(0);
-        } else if (val == 1) {
-            return op1;
-        } else if (val == -1) {
-            return new BinaryOperator(cur_func.new_var(), BinaryOperator.Op.SUB, new ConstInt(0), op1);
-        }
-        int tmp = Math.abs(val);
-        ArrayList<Integer> bits = new ArrayList<>();
-        for (int i = 0; i < 32; i++) {
-            if ((tmp & (1 << i)) != 0) bits.add(i);
-        }
-        if (bits.size() == 1) {
-            op1 = new BinaryOperator(cur_func.new_var(), BinaryOperator.Op.SLL, op1, new ConstInt(bits.get(0)));
-            if (val < 0) {
-                op1 = new BinaryOperator(cur_func.new_var(), BinaryOperator.Op.SUB, new ConstInt(0), op1);
-            }
-        } else {
-            castTo(op1, INT_TYPE);
-            op1 = new BinaryOperator(cur_func.new_var(), BinaryOperator.Op.MUL, op1, new ConstInt(val));
-        }
-        return op1;
-    }
-
-    static class MagicNumber {
-        public long M; // Magic number
-        public int sh_post; // 位移数
-        public int l;
-
-        public MagicNumber(long M, int sh_post, int l) {
-            this.M = M; this.sh_post = sh_post; this.l = l;
-        }
-    }
-    private static final int N = 32;
-    private static MagicNumber choose_multiplier(int d, int prec) {
-        int l = 1;
-        while ((1 << l) < d) l++;
-        int sh_post = l;
-        long m_low = (1L << (N + l)) / d, m_high = ((1L << (N + l)) + (1L << (N + l - prec))) / d;
-        while (m_low / 2 < m_high / 2 && sh_post > 0) {
-            m_low /= 2; m_high /= 2; sh_post--;
-        }
-        return new MagicNumber(m_high, sh_post, l);
-    }
-    private static Value div(Value n, int d) {
-        Value q = n;
-        int d_abs = Math.abs(d);
-        MagicNumber res = choose_multiplier(d_abs, N - 1);
-        if (d_abs == 1) {
-            q = n;
-        } else if (d_abs == (1 << res.l)) {
-            q = new BinaryOperator(cur_func.new_var(), BinaryOperator.Op.SRA, n, new ConstInt(res.l - 1));
-            q = new BinaryOperator(cur_func.new_var(), BinaryOperator.Op.SRL, q, new ConstInt(N - res.l));
-            q = new BinaryOperator(cur_func.new_var(), BinaryOperator.Op.ADD, n, q);
-            q = new BinaryOperator(cur_func.new_var(), BinaryOperator.Op.SRA, q, new ConstInt(res.l));
-        } else {
-            if (res.M < (1L << (N - 1))) {
-                q = new BinaryOperator(cur_func.new_var(), BinaryOperator.Op.MULSH, n, new ConstInt((int) res.M));
-                q = new BinaryOperator(cur_func.new_var(), BinaryOperator.Op.SRA, q, new ConstInt(res.sh_post));
-            } else {
-                q = new BinaryOperator(cur_func.new_var(), BinaryOperator.Op.MULSH, n, new ConstInt((int) (res.M - (1L << N))));
-                q = new BinaryOperator(cur_func.new_var(), BinaryOperator.Op.ADD, n, q);
-                q = new BinaryOperator(cur_func.new_var(), BinaryOperator.Op.SRA, q, new ConstInt(res.sh_post));
-            }
-            Value xsign = new BinaryOperator(cur_func.new_var(), BinaryOperator.Op.SRA, n, new ConstInt(N - 1));
-            q = new BinaryOperator(cur_func.new_var(), BinaryOperator.Op.SUB, q, xsign);
-        }
-        if (d < 0) {
-            q = new BinaryOperator(cur_func.new_var(), BinaryOperator.Op.SUB, new ConstInt(0), q);
-        }
-        return q;
-    }
-    private static Value rem(Value op1, int val) {
-        Value div_res = div(op1, val);
-        Value mul_res = mult(div_res, val);
-        return new BinaryOperator(cur_func.new_var(), BinaryOperator.Op.SUB, op1, mul_res);
-    }
-
+    
     public static Value MulExp(AstNode ast) {
         ArrayList<AstNode> sons = flatten(ast, AstType.MulExp);
         Value op1 = UnaryExp(sons.get(0));
@@ -723,22 +644,12 @@ public class IrGen {
                 sons.get(i).token.type == TokenType.MULT ? BinaryOperator.Op.MUL :
                 sons.get(i).token.type == TokenType.DIV ? BinaryOperator.Op.SDIV :
                     BinaryOperator.Op.SREM;
-            if (op1 instanceof ConstInt && op == BinaryOperator.Op.MUL) {
-                Value temp = op1; op1 = op2; op2 = temp;
-            }
             if (op1 instanceof ConstInt && op2 instanceof ConstInt) {
                 switch (op) {
                     case MUL -> op1 = new ConstInt(((ConstInt) op1).value * ((ConstInt) op2).value);
                     case SDIV -> op1 = new ConstInt(((ConstInt) op1).value / ((ConstInt) op2).value);
                     case SREM -> op1 = new ConstInt(((ConstInt) op1).value % ((ConstInt) op2).value);
                 }
-            } else if (op2 instanceof ConstInt) {
-                int val = ((ConstInt) op2).value;
-                op1 = switch (op) {
-                    case MUL -> mult(op1, val);
-                    case SDIV -> div(op1, val);
-                    default -> rem(op1, val);
-                };
             } else {
                 op1 = castTo(op1, INT_TYPE);
                 op2 = castTo(op2, INT_TYPE);
@@ -747,7 +658,6 @@ public class IrGen {
         }
         return op1;
     }
-
     public static Value AddExp(AstNode ast) {
         ArrayList<AstNode> sons = flatten(ast, AstType.AddExp);
         Value op1 = MulExp(sons.get(0));
