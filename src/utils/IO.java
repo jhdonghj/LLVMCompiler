@@ -55,7 +55,8 @@ public class IO {
     public static String last = "";
     public static void writeln(String content) {
         if (Config.taskType == Config.TaskType.MIPS
-                && last.startsWith("    sw") && content.startsWith("    lw")
+                && ((last.startsWith("    sw") && content.startsWith("    lw"))
+                    || (last.startsWith("    sb") && content.startsWith("    lb")))
                 && last.substring(6).equals(content.substring(6))) {
             return;
         }

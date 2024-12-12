@@ -7,6 +7,7 @@ import ir.type.PointerType;
 import ir.type.Type;
 import mipsGen.Regs;
 import mipsGen.MipsInfo;
+import utils.Utils;
 
 import static mipsGen.MipsInfo.*;
 import static utils.IO.writeln;
@@ -62,7 +63,11 @@ public class GetElementPointer extends Instr {
             } else {
                 offset_reg = loadValue(offset, offset_reg);
                 int size = type.getElementType().getSize();
-                writeln(String.format("    mul $k1, $%s, %d", offset_reg, size));
+                if (Utils.popcount(size) == 1) {
+                    writeln(String.format("    sll $k1, $%s, %d", offset_reg, Utils.ctz(size)));
+                } else {
+                    writeln(String.format("    mul $k1, $%s, %d", offset_reg, size));
+                }
                 writeln("    add $k0, $k0, $k1");
             }
             type = new PointerType(type.getElementType().getElementType());

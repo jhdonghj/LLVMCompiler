@@ -39,4 +39,22 @@ public class Utils {
             default -> null;
         };
     }
+
+    public static int popcount(int x) {
+        int cnt = 0;
+        while (x != 0) {
+            x &= x - 1;
+            cnt++;
+        }
+        return cnt;
+    }
+
+    public static int ctz(int x) {
+        int cnt = 0;
+        while ((x & 1) == 0) {
+            x >>= 1;
+            cnt++;
+        }
+        return cnt;
+    }
 }
