@@ -4,7 +4,6 @@ import analyse.Analyse;
 import ast.AstNode;
 import config.Config;
 import ir.Program;
-import ir.Value;
 import token.Token;
 
 import java.nio.file.Files;
@@ -53,7 +52,16 @@ public class IO {
         }
     }
 
+    public static String last = "";
     public static void writeln(String content) {
+        if (Config.taskType == Config.TaskType.MIPS
+                && last.startsWith("    sw") && content.startsWith("    lw")
+                && last.substring(6).equals(content.substring(6))) {
+            return;
+        }
+        if (!content.startsWith("    #")) {
+            last = content;
+        }
         try {
             Files.write(outputFile, (content + '\n').getBytes(), StandardOpenOption.APPEND);
         } catch (java.io.IOException e) {
@@ -97,6 +105,6 @@ public class IO {
 
     public static void printIr(Program program) {
         setOut(Config.llvmOutputFile);
-        program.print();
+        program.to_llvm();
     }
 }
