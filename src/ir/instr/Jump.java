@@ -10,6 +10,10 @@ public class Jump extends Instr {
         super(VOID_TYPE, name, destBB);
     }
 
+    public BasicBlock getDestBB() {
+        return (BasicBlock) operands.get(0);
+    }
+
     @Override
     public String toString() {
         return String.format("  br label %%%s", operands.get(0).name);

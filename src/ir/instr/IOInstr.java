@@ -5,11 +5,12 @@ import ir.Value;
 import ir.type.PointerType;
 import ir.type.Type;
 import mipsGen.Regs;
-import mipsGen.mipsInfo;
+import mipsGen.MipsInfo;
 
 import static ir.type.IntegerType.*;
+import static mipsGen.MipsInfo.move;
 import static utils.IO.writeln;
-import static mipsGen.mipsInfo.loadValue;
+import static mipsGen.MipsInfo.loadValue;
 
 public class IOInstr extends Instr {
     public IOInstr(Type type, String name, Value... operands) {
@@ -31,13 +32,14 @@ public class IOInstr extends Instr {
             super.to_mips();
             writeln("    li $v0, 5");
             writeln("    syscall");
-            if (mipsInfo.value2reg.containsKey(this)) {
-                Regs reg = mipsInfo.value2reg.get(this);
-                writeln(String.format("    move $%s, $%s", reg, Regs.v0));
+            if (MipsInfo.value2reg.containsKey(this.name)) {
+                move(MipsInfo.value2reg.get(this.name), Regs.v0);
+//                Regs reg = MipsInfo.value2reg.get(this.name);
+//                writeln(String.format("    move $%s, $%s", reg, Regs.v0));
             } else {
-                mipsInfo.alloc(new PointerType(INT_TYPE));
-                mipsInfo.value2offset.put(this, mipsInfo.cur_offset);
-                writeln(String.format("    sw $%s, %d($sp)", Regs.v0, mipsInfo.value2offset.get(this)));
+                MipsInfo.alloc(new PointerType(INT_TYPE));
+                MipsInfo.value2offset.put(this.name, MipsInfo.cur_offset);
+                writeln(String.format("    sw $%s, %d($sp)", Regs.v0, MipsInfo.value2offset.get(this.name)));
             }
         }
     }
@@ -57,13 +59,14 @@ public class IOInstr extends Instr {
             super.to_mips();
             writeln("    li $v0, 12");
             writeln("    syscall");
-            if (mipsInfo.value2reg.containsKey(this)) {
-                Regs reg = mipsInfo.value2reg.get(this);
-                writeln(String.format("    move $%s, $%s", reg, Regs.v0));
+            if (MipsInfo.value2reg.containsKey(this.name)) {
+                move(MipsInfo.value2reg.get(this.name), Regs.v0);
+//                Regs reg = MipsInfo.value2reg.get(this.name);
+//                writeln(String.format("    move $%s, $%s", reg, Regs.v0));
             } else {
-                mipsInfo.alloc(new PointerType(INT_TYPE));
-                mipsInfo.value2offset.put(this, mipsInfo.cur_offset);
-                writeln(String.format("    sw $%s, %d($sp)", Regs.v0, mipsInfo.value2offset.get(this)));
+                MipsInfo.alloc(new PointerType(INT_TYPE));
+                MipsInfo.value2offset.put(this.name, MipsInfo.cur_offset);
+                writeln(String.format("    sw $%s, %d($sp)", Regs.v0, MipsInfo.value2offset.get(this.name)));
             }
         }
     }
@@ -84,6 +87,9 @@ public class IOInstr extends Instr {
             Value val = operands.get(0);
             Regs reg = Regs.a0;
             reg = loadValue(val, reg);
+            if (!reg.equals(Regs.a0)) {
+                writeln(String.format("    move $a0, $%s", reg));
+            }
             writeln("    li $v0, 1");
             writeln("    syscall");
         }
@@ -105,6 +111,9 @@ public class IOInstr extends Instr {
             Value val = operands.get(0);
             Regs reg = Regs.a0;
             reg = loadValue(val, reg);
+            if (!reg.equals(Regs.a0)) {
+                writeln(String.format("    move $a0, $%s", reg));
+            }
             writeln("    li $v0, 11");
             writeln("    syscall");
         }

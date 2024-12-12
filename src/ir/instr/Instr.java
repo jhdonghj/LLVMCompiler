@@ -11,20 +11,22 @@ import static utils.IO.writeln;
 
 public class Instr extends User {
     public BasicBlock parentBB;
-//    public int id;
 
     public Instr(Type type, String name, Value... operands) {
         // name = %id
         super(type, name, operands);
-//        id = Integer.parseInt(name.substring(1));
         new_instr(this); // auto add to current basic block
     }
 
-    public String toString() {
-        return "not implemented";
+    public boolean isJump() {
+        return this instanceof Branch || this instanceof Jump || this instanceof Return;
     }
 
-    public void print() {
+    public String toString() {
+        return String.format("%s not implemented", this.getClass().getSimpleName());
+    }
+
+    public void to_llvm() {
         writeln(this.toString());
     }
 

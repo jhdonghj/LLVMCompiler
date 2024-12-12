@@ -20,6 +20,7 @@ import static utils.Utils.singleType;
 public class IrGen {
     // Helper functions
 
+    private static boolean isIrGen = false;
     private static Program program;
     private static ArrayList<HashMap<String, Value>> scopes;
     public static ArrayList<Loop> loops;
@@ -49,24 +50,30 @@ public class IrGen {
     public static Function cur_func;
     public static BasicBlock cur_bb;
     public static void new_bb(BasicBlock bb) {
+        if (!isIrGen) return;
         cur_func.bbs.add(bb);
         bb.parentFunc = cur_func;
     }
     public static void new_instr(Instr instr) {
+        if (!isIrGen) return;
         cur_bb.instrs.add(instr);
         instr.parentBB = cur_bb;
     }
     public static void new_globalVariable(GlobalVariable globalVariable) {
+        if (!isIrGen) return;
         program.addGlobalVariable(globalVariable);
     }
     public static void new_func(Function func) {
+        if (!isIrGen) return;
         cur_func = func;
         program.addFunction(func);
     }
     public static void new_param(FuncParam param) {
+        if (!isIrGen) return;
         cur_func.params.add(param);
     }
     public static void new_constString(ConstString constString) {
+        if (!isIrGen) return;
         program.addConstString(constString);
     }
 
@@ -108,11 +115,13 @@ public class IrGen {
     // Main functions
 
     public static Program generate(AstNode ast) {
+        isIrGen = true;
         program = new Program();
         scopes = new ArrayList<>();
         loops = new ArrayList<>();
         enter();
         CompUnit(ast);
+        isIrGen = false;
         return program;
     }
 
@@ -520,11 +529,12 @@ public class IrGen {
         Token ident = ast.get(0).token;
         Value value = get_value(ident.value);
         if (ast.size() == 1) {
-            if (value.isConstant) {
-                Initializer initializer = value instanceof GlobalVariable ?
-                    ((GlobalVariable) value).initializer : ((Allocate) value).initializer;
-                return new ConstInt(initializer.get(0));
-            } else if (!((PointerType) value.type).elementType.isArray()) {
+            if (!((PointerType) value.type).elementType.isArray()) {
+                if (value.isConstant) {
+                    Initializer initializer = value instanceof GlobalVariable ?
+                        ((GlobalVariable) value).initializer : ((Allocate) value).initializer;
+                    return new ConstInt(initializer.get(0));
+                }
                 return new Load(cur_func.new_var(), value);
             } else { // for function parameters
                 Value pointer = value;
@@ -634,7 +644,7 @@ public class IrGen {
         }
         return values;
     }
-    
+
     public static Value MulExp(AstNode ast) {
         ArrayList<AstNode> sons = flatten(ast, AstType.MulExp);
         Value op1 = UnaryExp(sons.get(0));
@@ -658,6 +668,7 @@ public class IrGen {
         }
         return op1;
     }
+
     public static Value AddExp(AstNode ast) {
         ArrayList<AstNode> sons = flatten(ast, AstType.AddExp);
         Value op1 = MulExp(sons.get(0));

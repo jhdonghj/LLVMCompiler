@@ -16,7 +16,7 @@ public class GlobalVariable extends Value {
         new_globalVariable(this);
     }
 
-    public void print() {
+    public void to_llvm() {
         writeln(name + " = dso_local global " + initializer);
     }
 

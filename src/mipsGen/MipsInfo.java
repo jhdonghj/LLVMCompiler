@@ -10,10 +10,10 @@ import java.util.HashMap;
 
 import static utils.IO.writeln;
 
-public class mipsInfo {
+public class MipsInfo {
     public static int cur_offset = 0; // negative
-    public static HashMap<Value, Integer> value2offset = new HashMap<>();
-    public static HashMap<Value, Regs> value2reg = new HashMap<>();
+    public static HashMap<String, Integer> value2offset = new HashMap<>();
+    public static HashMap<String, Regs> value2reg = new HashMap<>();
 
     public static void enter(Function func) {
         cur_offset = 0;
@@ -34,37 +34,42 @@ public class mipsInfo {
     public static Regs loadValue(Value value, Regs reg) {
         if (value instanceof ConstInt) {
             writeln(String.format("    li $%s, %d", reg, ((ConstInt) value).value));
-        } else if (value2reg.containsKey(value)) {
-            reg = value2reg.get(value);
+        } else if (value2reg.containsKey(value.name)) {
+            reg = value2reg.get(value.name);
         } else {
-            if (!value2offset.containsKey(value)) {
+            if (!value2offset.containsKey(value.name)) {
                 alloc(value.type);
-                value2offset.put(value, cur_offset);
+                value2offset.put(value.name, cur_offset);
             }
-            if (value.type.getByte() == 4) {
-                writeln(String.format("    lw $%s, %d($sp)", reg, value2offset.get(value)));
-            } else {
-                writeln(String.format("    lb $%s, %d($sp)", reg, value2offset.get(value)));
-            }
+            load(value.type, reg, value2offset.get(value.name), Regs.sp);
         }
         return reg;
+    }
+
+    public static void storeValue(Value value, Regs reg) {
+        if (value2reg.containsKey(value.name)) {
+            move(value2reg.get(value.name), reg);
+        } else {
+            if (!value2offset.containsKey(value.name)) {
+                alloc(value.type);
+                value2offset.put(value.name, cur_offset);
+            }
+            store(value.type, reg, value2offset.get(value.name), Regs.sp);
+        }
     }
 
     public static Regs loadAddress(Value value, Regs reg) {
         if (value instanceof GlobalVariable) {
             writeln(String.format("    la $%s, %s", reg, value.name.substring(1)));
-        } else if (value2reg.containsKey(value)) {
-            reg = value2reg.get(value);
+//            writeln(String.format("    lw $%s, %s", reg, value.name.substring(1)));
+        } else if (value2reg.containsKey(value.name)) {
+            reg = value2reg.get(value.name);
         } else {
-            if (!value2offset.containsKey(value)) {
+            if (!value2offset.containsKey(value.name)) {
                 alloc(value.type);
-                value2offset.put(value, cur_offset);
+                value2offset.put(value.name, cur_offset);
             }
-            if (value.type.getByte() == 4) {
-                writeln(String.format("    lw $%s, %d($sp)", reg, value2offset.get(value)));
-            } else {
-                writeln(String.format("    lb $%s, %d($sp)", reg, value2offset.get(value)));
-            }
+            load(value.type, reg, value2offset.get(value.name), Regs.sp);
         }
         return reg;
     }
@@ -82,6 +87,12 @@ public class mipsInfo {
             writeln(String.format("    sw $%s, %d($%s)", target_reg, offset, pointer_reg));
         } else {
             writeln(String.format("    sb $%s, %d($%s)", target_reg, offset, pointer_reg));
+        }
+    }
+
+    public static void move(Regs reg1, Regs reg2) {
+        if (!reg1.equals(reg2)) {
+            writeln(String.format("    move $%s, $%s", reg1, reg2));
         }
     }
 }

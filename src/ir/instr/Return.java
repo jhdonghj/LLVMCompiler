@@ -3,10 +3,10 @@ package ir.instr;
 import ir.ConstInt;
 import ir.Value;
 import mipsGen.Regs;
-import mipsGen.mipsInfo;
+import mipsGen.MipsInfo;
 
 import static ir.type.IntegerType.VOID_TYPE;
-import static mipsGen.mipsInfo.loadValue;
+import static mipsGen.MipsInfo.move;
 import static utils.IO.writeln;
 
 public class Return extends Instr {
@@ -33,18 +33,19 @@ public class Return extends Instr {
             Value retVal = operands.get(0);
             if (retVal instanceof ConstInt) {
                 writeln(String.format("    li $v0, %d", ((ConstInt) retVal).value));
-            } else if (mipsInfo.value2reg.containsKey(retVal)) {
-                Regs reg = mipsInfo.value2reg.get(retVal);
-                writeln(String.format("    move $v0, $%s", reg));
+            } else if (MipsInfo.value2reg.containsKey(retVal.name)) {
+                move(Regs.v0, MipsInfo.value2reg.get(retVal.name));
+//                Regs reg = MipsInfo.value2reg.get(retVal.name);
+//                writeln(String.format("    move $v0, $%s", reg));
             } else {
-                if (!mipsInfo.value2offset.containsKey(retVal)) {
-                    mipsInfo.alloc(retVal.type);
-                    mipsInfo.value2offset.put(retVal, mipsInfo.cur_offset);
+                if (!MipsInfo.value2offset.containsKey(retVal.name)) {
+                    MipsInfo.alloc(retVal.type);
+                    MipsInfo.value2offset.put(retVal.name, MipsInfo.cur_offset);
                 }
                 if (retVal.type.getByte() == 4) {
-                    writeln(String.format("    lw $v0, %d($sp)", mipsInfo.value2offset.get(retVal)));
+                    writeln(String.format("    lw $v0, %d($sp)", MipsInfo.value2offset.get(retVal.name)));
                 } else {
-                    writeln(String.format("    lb $v0, %d($sp)", mipsInfo.value2offset.get(retVal)));
+                    writeln(String.format("    lb $v0, %d($sp)", MipsInfo.value2offset.get(retVal.name)));
                 }
             }
         }

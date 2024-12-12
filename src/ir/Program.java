@@ -27,22 +27,22 @@ public class Program {
         functions.add(function);
     }
 
-    public void print() {
+    public void to_llvm() {
         writeln("declare i32 @getint()");
         writeln("declare i32 @getchar()");
         writeln("declare void @putint(i32)");
         writeln("declare void @putch(i8)");
         writeln("declare void @putstr(i8*)\n");
         for (ConstString constString : constStrings) {
-            constString.print();
+            constString.to_llvm();
         }
         writeln("");;
         for (GlobalVariable globalVariable : globalVariables) {
-            globalVariable.print();
+            globalVariable.to_llvm();
         }
         writeln("");
         for (Function function : functions) {
-            function.print();
+            function.to_llvm();
             writeln("");
         }
     }
@@ -59,6 +59,7 @@ public class Program {
         writeln("# jump to main");
         writeln("    jal main");
         writeln("    j _exit");
+        writeln("");
         for (Function function : functions) {
             function.to_mips();
         }

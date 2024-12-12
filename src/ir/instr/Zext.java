@@ -3,9 +3,9 @@ package ir.instr;
 import ir.Value;
 import ir.type.Type;
 import mipsGen.Regs;
-import mipsGen.mipsInfo;
+import mipsGen.MipsInfo;
 
-import static mipsGen.mipsInfo.loadValue;
+import static mipsGen.MipsInfo.loadValue;
 import static utils.IO.writeln;
 
 public class Zext extends Instr {
@@ -31,13 +31,13 @@ public class Zext extends Instr {
 
         reg = loadValue(src, reg);
 
-        if (!mipsInfo.value2offset.containsKey(this)) {
-            mipsInfo.alloc(destType);
-            mipsInfo.value2offset.put(this, mipsInfo.cur_offset);
+        if (!MipsInfo.value2offset.containsKey(this.name)) {
+            MipsInfo.alloc(destType);
+            MipsInfo.value2offset.put(this.name, MipsInfo.cur_offset);
             if (destType.getByte() == 4) {
-                writeln(String.format("    sw $%s, %d($sp)", reg, mipsInfo.cur_offset));
+                writeln(String.format("    sw $%s, %d($sp)", reg, MipsInfo.cur_offset));
             } else {
-                writeln(String.format("    sb $%s, %d($sp)", reg, mipsInfo.cur_offset));
+                writeln(String.format("    sb $%s, %d($sp)", reg, MipsInfo.cur_offset));
             }
         }
     }

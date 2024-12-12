@@ -16,7 +16,7 @@ public class ConstString extends Value {
         new_constString(this);
     }
 
-    public void print() {
+    public void to_llvm() {
         writeln(name + " = constant " + ((PointerType) type).elementType + " c\"" +
                 value.replaceAll("\n", "\\\\0A") + "\\00\"");
     }

@@ -3,11 +3,12 @@ package ir.instr;
 import ir.Value;
 import ir.type.PointerType;
 import mipsGen.Regs;
-import mipsGen.mipsInfo;
+import mipsGen.MipsInfo;
 
 import static ir.type.IntegerType.INT_TYPE;
+import static mipsGen.MipsInfo.storeValue;
 import static utils.IO.writeln;
-import static mipsGen.mipsInfo.loadValue;
+import static mipsGen.MipsInfo.loadValue;
 
 public class BinaryOperator extends Instr {
     public enum Op {
@@ -79,10 +80,11 @@ public class BinaryOperator extends Instr {
                 writeln(String.format("    mfhi $%s", target));
                 break;
         }
-        if (!mipsInfo.value2reg.containsKey(this)) {
-            mipsInfo.alloc(new PointerType(INT_TYPE));
-            mipsInfo.value2offset.put(this, mipsInfo.cur_offset);
-            writeln(String.format("    sw $%s, %d($sp)", target, mipsInfo.value2offset.get(this)));
-        }
+        storeValue(this, target);
+//        if (!MipsInfo.value2reg.containsKey(this)) {
+//            MipsInfo.alloc(INT_TYPE);
+//            MipsInfo.value2offset.put(this, MipsInfo.cur_offset);
+//            writeln(String.format("    sw $%s, %d($sp)", target, MipsInfo.value2offset.get(this)));
+//        }
     }
 }

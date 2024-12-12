@@ -1,17 +1,20 @@
 package ir.instr;
 
-import ir.GlobalVariable;
 import ir.Value;
 import ir.type.PointerType;
 import mipsGen.Regs;
-import mipsGen.mipsInfo;
+import mipsGen.MipsInfo;
 
-import static mipsGen.mipsInfo.loadAddress;
-import static utils.IO.writeln;
+import static mipsGen.MipsInfo.loadAddress;
+import static mipsGen.MipsInfo.storeValue;
 
 public class Load extends Instr {
     public Load(String name, Value ptr) {
         super(((PointerType) ptr.type).elementType, name, ptr);
+    }
+
+    public Value getPtr() {
+        return operands.get(0);
     }
 
     @Override
@@ -25,15 +28,17 @@ public class Load extends Instr {
     public void to_mips() {
         super.to_mips();
         Value ptr = operands.get(0);
-        Regs pointer_reg = Regs.k0, target_reg = mipsInfo.value2reg.getOrDefault(this, Regs.k0);
+        Regs pointer_reg = Regs.k0, target_reg = MipsInfo.value2reg.getOrDefault(this, Regs.k0);
 
-        loadAddress(ptr, pointer_reg);
+        pointer_reg = loadAddress(ptr, pointer_reg);
 
-        mipsInfo.load(type, target_reg, 0, pointer_reg);
-        if (!mipsInfo.value2reg.containsKey(this)) {
-            mipsInfo.alloc(type);
-            mipsInfo.value2offset.put(this, mipsInfo.cur_offset);
-            mipsInfo.store(type, target_reg, mipsInfo.value2offset.get(this), Regs.sp);
+        MipsInfo.load(type, target_reg, 0, pointer_reg);
+
+//        storeValue(this, target_reg);
+        if (!MipsInfo.value2reg.containsKey(this.name)) {
+            MipsInfo.alloc(type);
+            MipsInfo.value2offset.put(this.name, MipsInfo.cur_offset);
+            MipsInfo.store(type, target_reg, MipsInfo.value2offset.get(this.name), Regs.sp);
         }
     }
 }

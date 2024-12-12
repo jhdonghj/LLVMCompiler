@@ -6,6 +6,7 @@ import config.Config;
 import err.ErrHandler;
 import ir.Program;
 import irGen.IrGen;
+import opt.Opt;
 import token.Token;
 import utils.IO;
 
@@ -32,6 +33,9 @@ public class Compiler {
             return;
         }
         Program program = IrGen.generate(ast);
+        if (Config.opt) {
+            Opt.run(program);
+        }
         if (Config.taskType == Config.TaskType.IR) {
             IO.printIr(program);
         }
