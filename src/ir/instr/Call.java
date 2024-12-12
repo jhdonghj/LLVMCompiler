@@ -51,6 +51,7 @@ public class Call extends Instr {
         super.to_mips();
         // store regs
         ArrayList<Regs> usedRegs = new ArrayList<>(new HashSet<>(MipsInfo.value2reg.values()));
+        Function func = (Function) operands.get(0);
         HashMap<Regs, Integer> reg2off = new HashMap<>();
         MipsInfo.alignTo(4);
         int offset = MipsInfo.cur_offset;
@@ -66,8 +67,13 @@ public class Call extends Instr {
         // store params
         for (int i = 1; i < operands.size(); i++) {
             Value param = operands.get(i);
-            if (i <= 3) {
-                Regs reg = Regs.a1.get(i - 1);
+            if (i <= 3 || (!func.hasPrint && i <= 4)) {
+                Regs reg;
+                if (func.hasPrint) {
+                    reg = Regs.a1.get(i - 1);
+                } else {
+                    reg = Regs.a0.get(i - 1);
+                }
                 if (param instanceof ConstInt) {
                     writeln(String.format("    li $%s, %d", reg, ((ConstInt) param).value));
                 } else if (MipsInfo.value2reg.containsKey(param.name)) {
@@ -98,7 +104,6 @@ public class Call extends Instr {
             }
         }
         // call
-        Function func = (Function) operands.get(0);
         writeln(String.format("    addi $sp, $sp, %d", offset));
         writeln(String.format("    jal %s", func.name));
         writeln("    lw $ra, 0($sp)");

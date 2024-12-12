@@ -21,6 +21,7 @@ public class Phi extends Instr {
     }
 
     public void addOperand(BasicBlock bb, Value value) {
+        operands.add(value);
         preBBs.put(bb, value);
         value.addUse(this);
     }

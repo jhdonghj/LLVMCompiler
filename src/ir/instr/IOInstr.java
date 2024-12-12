@@ -98,6 +98,7 @@ public class IOInstr extends Instr {
     public static class PutChar extends IOInstr {
         public PutChar(String name, Value val) {
             super(VOID_TYPE, name, val);
+            parentBB.parentFunc.hasPrint = true;
         }
 
         @Override
@@ -125,6 +126,7 @@ public class IOInstr extends Instr {
         public PutString(String name, ConstString str) {
             super(VOID_TYPE, name);
             this.str = str;
+            parentBB.parentFunc.hasPrint = true;
         }
 
         @Override

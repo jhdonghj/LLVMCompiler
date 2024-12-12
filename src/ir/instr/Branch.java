@@ -1,6 +1,7 @@
 package ir.instr;
 
 import ir.BasicBlock;
+import ir.Function;
 import ir.Value;
 import mipsGen.Regs;
 import mipsGen.MipsInfo;
@@ -45,6 +46,8 @@ public class Branch extends Instr {
             writeln(String.format("    lw $%s, %d($sp)", reg, MipsInfo.value2offset.get(cond.name)));
         }
         writeln(String.format("    bne $%s, $0, %s", reg, thenBB.name));
-        writeln(String.format("    j %s", elseBB.name));
+        if (Function.nxtBB == null || !Function.nxtBB.equals(elseBB)) {
+            writeln(String.format("    j %s", elseBB.name));
+        }
     }
 }

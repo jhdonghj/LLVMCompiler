@@ -11,7 +11,11 @@ public class Opt {
         Mem2Reg.run(program);
 //        setOut("files/opt1.txt");
 //        program.to_llvm();
+        DCE.run(program);
+//        setOut("files/opt2.txt");
+//        program.to_llvm();
         RemovePhi.run(program);
+        ReOrderBB.run(program);
 //        setOut("files/opt2.txt");
 //        program.to_llvm();
     }
