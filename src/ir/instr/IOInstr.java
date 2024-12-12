@@ -87,9 +87,7 @@ public class IOInstr extends Instr {
             Value val = operands.get(0);
             Regs reg = Regs.a0;
             reg = loadValue(val, reg);
-            if (!reg.equals(Regs.a0)) {
-                writeln(String.format("    move $a0, $%s", reg));
-            }
+            move(Regs.a0, reg);
             writeln("    li $v0, 1");
             writeln("    syscall");
         }
@@ -112,9 +110,7 @@ public class IOInstr extends Instr {
             Value val = operands.get(0);
             Regs reg = Regs.a0;
             reg = loadValue(val, reg);
-            if (!reg.equals(Regs.a0)) {
-                writeln(String.format("    move $a0, $%s", reg));
-            }
+            move(Regs.a0, reg);
             writeln("    li $v0, 11");
             writeln("    syscall");
         }

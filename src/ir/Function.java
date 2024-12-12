@@ -1,11 +1,14 @@
 package ir;
 
+import ir.instr.Instr;
 import ir.type.FunctionType;
 import ir.type.Type;
 import mipsGen.Regs;
 import mipsGen.MipsInfo;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import static irGen.IrGen.new_func;
 import static utils.IO.writeln;
@@ -15,6 +18,8 @@ public class Function extends Value {
     public ArrayList<FuncParam> params;
     public Type retType;
     public boolean hasPrint = false;
+    public HashMap<String, Regs> value2reg = new HashMap<>();
+    public HashSet<Regs> regClosure = new HashSet<>();
     private static int var_cnt = 0;
     public static BasicBlock nxtBB;
 
@@ -54,6 +59,7 @@ public class Function extends Value {
     public void to_mips() {
         writeln(String.format("%s:", name));
         MipsInfo.enter(this);
+        MipsInfo.value2reg = new HashMap<>(value2reg);
         for (int i = 0; i < params.size(); i++) {
             FuncParam param = params.get(i);
             if (hasPrint) {

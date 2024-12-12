@@ -37,7 +37,8 @@ public class Icmp extends Instr {
     public void to_mips() {
         super.to_mips();
         Value lhs = operands.get(0), rhs = operands.get(1);
-        Regs reg1 = Regs.k0, reg2 = Regs.k1, target = Regs.k0;
+        Regs reg1 = Regs.k0, reg2 = Regs.k1;
+        Regs target = MipsInfo.value2reg.getOrDefault(this.name, Regs.k0);
 
         reg1 = loadValue(lhs, reg1);
         reg2 = loadValue(rhs, reg2);

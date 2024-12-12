@@ -28,6 +28,10 @@ public class Call extends Instr {
         }
     }
 
+    public Function getFunction() {
+        return (Function) operands.get(0);
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -50,8 +54,14 @@ public class Call extends Instr {
     public void to_mips() {
         super.to_mips();
         // store regs
-        ArrayList<Regs> usedRegs = new ArrayList<>(new HashSet<>(MipsInfo.value2reg.values()));
-        Function func = (Function) operands.get(0);
+        ArrayList<Regs> usedRegs = new ArrayList<>();
+        Function func = getFunction();
+        for (Regs reg : MipsInfo.value2reg.values()) {
+            if (func.regClosure.contains(reg) ||
+                    (Regs.a0.ordinal() <= reg.ordinal() && reg.ordinal() <= Regs.a3.ordinal())) {
+                usedRegs.add(reg);
+            }
+        }
         HashMap<Regs, Integer> reg2off = new HashMap<>();
         MipsInfo.alignTo(4);
         int offset = MipsInfo.cur_offset;

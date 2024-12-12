@@ -48,9 +48,10 @@ public class GetElementPointer extends Instr {
         Value pointer = operands.get(0);
         Regs pointer_reg = Regs.k0;
         Regs offset_reg = Regs.k1;
+        Regs target_reg = value2reg.getOrDefault(this.name, Regs.k0);
 
         pointer_reg = loadAddress(pointer, pointer_reg);
-        move(Regs.k0, pointer_reg);
+        move(target_reg, pointer_reg);
 
         Type type = pointer.type;
         for (int i = 1; i < operands.size(); i++) {
@@ -58,7 +59,8 @@ public class GetElementPointer extends Instr {
             if (offset instanceof ConstInt) {
                 int offset_val = ((ConstInt) offset).value;
                 if (offset_val != 0) {
-                    writeln(String.format("    addi $k0, $k0, %d", offset_val * type.getElementType().getSize()));
+                    writeln(String.format("    addi $%s, $%s, %d",
+                            target_reg, target_reg, offset_val * type.getElementType().getSize()));
                 }
             } else {
                 offset_reg = loadValue(offset, offset_reg);
@@ -68,16 +70,16 @@ public class GetElementPointer extends Instr {
                 } else {
                     writeln(String.format("    mul $k1, $%s, %d", offset_reg, size));
                 }
-                writeln("    add $k0, $k0, $k1");
+                writeln(String.format("    add $%s, $%s, $k1", target_reg, target_reg));
             }
             type = new PointerType(type.getElementType().getElementType());
         }
 
-//        storeValue(this, pointer_reg);
+//        storeValue(this, target_reg);
         if (!MipsInfo.value2reg.containsKey(this.name)) {
             MipsInfo.alloc(type);
             MipsInfo.value2offset.put(this.name, MipsInfo.cur_offset);
-            writeln(String.format("    sw $k0, %d($sp)", MipsInfo.value2offset.get(this.name)));
+            writeln(String.format("    sw $%s, %d($sp)", target_reg, MipsInfo.value2offset.get(this.name)));
         }
     }
 }

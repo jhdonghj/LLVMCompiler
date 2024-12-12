@@ -5,7 +5,7 @@ import ir.type.Type;
 import mipsGen.Regs;
 import mipsGen.MipsInfo;
 
-import static mipsGen.MipsInfo.loadValue;
+import static mipsGen.MipsInfo.*;
 import static utils.IO.writeln;
 
 public class Zext extends Instr {
@@ -31,14 +31,16 @@ public class Zext extends Instr {
 
         reg = loadValue(src, reg);
 
-        if (!MipsInfo.value2offset.containsKey(this.name)) {
-            MipsInfo.alloc(destType);
-            MipsInfo.value2offset.put(this.name, MipsInfo.cur_offset);
-            if (destType.getByte() == 4) {
-                writeln(String.format("    sw $%s, %d($sp)", reg, MipsInfo.cur_offset));
-            } else {
-                writeln(String.format("    sb $%s, %d($sp)", reg, MipsInfo.cur_offset));
-            }
-        }
+        storeValue(this, reg);
+//        if (!MipsInfo.value2offset.containsKey(this.name)) {
+//            MipsInfo.alloc(destType);
+//            MipsInfo.value2offset.put(this.name, MipsInfo.cur_offset);
+//            store(destType, reg, MipsInfo.cur_offset, Regs.sp);
+//            if (destType.getByte() == 4) {
+//                writeln(String.format("    sw $%s, %d($sp)", reg, MipsInfo.cur_offset));
+//            } else {
+//                writeln(String.format("    sb $%s, %d($sp)", reg, MipsInfo.cur_offset));
+//            }
+//        }
     }
 }

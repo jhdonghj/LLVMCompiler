@@ -1,10 +1,10 @@
 package ir.instr;
 
 import ir.Value;
+import mipsGen.MipsInfo;
 import mipsGen.Regs;
 
-import static mipsGen.MipsInfo.loadValue;
-import static mipsGen.MipsInfo.storeValue;
+import static mipsGen.MipsInfo.*;
 import static utils.IO.writeln;
 
 public class Move extends Instr {
@@ -34,13 +34,14 @@ public class Move extends Instr {
     public void to_mips() {
         super.to_mips();
         Value source = getSource(), target = getTarget();
-        Regs regs = Regs.k0, regt = Regs.k1;
+        Regs src = Regs.k0, dest = value2reg.getOrDefault(target.name, Regs.k0);
 
-        regs = loadValue(source, regs);
-        regt = loadValue(target, regt);
+        src = loadValue(source, src);
+//        dest = loadValue(target, dest);
 
-        writeln(String.format("    move $%s, $%s", regt, regs));
+        move(dest, src);
+//        writeln(String.format("    move $%s, $%s", dest, src));
 
-        storeValue(this, regt);
+        storeValue(this, dest);
     }
 }
