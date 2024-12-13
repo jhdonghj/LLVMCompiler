@@ -1,9 +1,6 @@
 package mipsGen;
 
-import ir.ConstInt;
-import ir.Function;
-import ir.GlobalVariable;
-import ir.Value;
+import ir.*;
 import ir.type.Type;
 
 import java.util.HashMap;
@@ -14,6 +11,7 @@ public class MipsInfo {
     public static int cur_offset = 0; // negative
     public static HashMap<String, Integer> value2offset = new HashMap<>();
     public static HashMap<String, Regs> value2reg = new HashMap<>();
+    public static HashMap<BasicBlock, BasicBlock> fa = new HashMap<>();
 
     public static void enter(Function func) {
         cur_offset = 0;
@@ -94,5 +92,13 @@ public class MipsInfo {
         if (!reg1.equals(reg2)) {
             writeln(String.format("    move $%s, $%s", reg1, reg2));
         }
+    }
+
+    public static BasicBlock find(BasicBlock bb) {
+        if (fa.get(bb).equals(bb)) {
+            return bb;
+        }
+        fa.put(bb, find(fa.get(bb)));
+        return fa.get(bb);
     }
 }

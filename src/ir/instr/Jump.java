@@ -1,7 +1,9 @@
 package ir.instr;
 
+import config.Config;
 import ir.BasicBlock;
 import ir.Function;
+import mipsGen.MipsInfo;
 
 import static ir.type.IntegerType.VOID_TYPE;
 import static utils.IO.writeln;
@@ -23,8 +25,10 @@ public class Jump extends Instr {
     @Override
     public void to_mips() {
         super.to_mips();
-        if (Function.nxtBB == null || !Function.nxtBB.equals(getDestBB())) {
-            writeln(String.format("    j %s", operands.get(0).name));
+        BasicBlock destBB = getDestBB();
+        if (Function.nxtBB == null || !Function.nxtBB.equals(destBB)) {
+            if (Config.opt) destBB = MipsInfo.find(destBB);
+            writeln(String.format("    j %s", destBB.name));
         }
     }
 }

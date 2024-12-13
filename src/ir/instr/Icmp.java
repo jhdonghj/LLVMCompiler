@@ -51,13 +51,17 @@ public class Icmp extends Instr {
                 writeln(String.format("    sne $%s, $%s, $%s", target, reg1, reg2));
                 break;
             case SLE:
-                writeln(String.format("    sle $%s, $%s, $%s", target, reg1, reg2));
+//                writeln(String.format("    sle $%s, $%s, $%s", target, reg1, reg2));
+                writeln(String.format(("    slt $%s, $%s, $%s"), target, reg2, reg1));
+                writeln(String.format(("    xori $%s, $%s, 1"), target, target));
                 break;
             case SLT:
                 writeln(String.format("    slt $%s, $%s, $%s", target, reg1, reg2));
                 break;
             case SGE:
-                writeln(String.format("    sge $%s, $%s, $%s", target, reg1, reg2));
+//                writeln(String.format("    sge $%s, $%s, $%s", target, reg1, reg2));
+                writeln(String.format(("    sgt $%s, $%s, $%s"), target, reg2, reg1));
+                writeln(String.format(("    xori $%s, $%s, 1"), target, target));
                 break;
             case SGT:
                 writeln(String.format("    sgt $%s, $%s, $%s", target, reg1, reg2));

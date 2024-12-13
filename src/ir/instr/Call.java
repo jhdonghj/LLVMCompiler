@@ -55,7 +55,7 @@ public class Call extends Instr {
     public void to_mips() {
         super.to_mips();
         // store regs
-        System.out.println(parentBB.act_out.size());
+//        System.out.println(parentBB.act_out.size());
         HashSet<Regs> liveRegs = new HashSet<>();
         for (Value value : parentBB.act_out) {
             if (value2reg.containsKey(value.name)) {

@@ -18,6 +18,7 @@ public class Opt {
         RegAlloc.run(program);
         ActiveAnalyse.run(program);
         ReOrderBB.run(program);
+        MergeBB.run(program);
 //        setOut("files/opt2.txt");
 //        program.to_llvm();
     }
