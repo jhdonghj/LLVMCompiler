@@ -14,8 +14,9 @@ public class Opt {
         DCE.run(program);
 //        setOut("files/opt2.txt");
 //        program.to_llvm();
-        RegAlloc.run(program);
         RemovePhi.run(program);
+        RegAlloc.run(program);
+        ActiveAnalyse.run(program);
         ReOrderBB.run(program);
 //        setOut("files/opt2.txt");
 //        program.to_llvm();

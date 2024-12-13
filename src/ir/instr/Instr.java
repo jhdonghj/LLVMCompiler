@@ -5,12 +5,15 @@ import ir.User;
 import ir.Value;
 import ir.type.Type;
 
+import java.util.HashSet;
+
 import static irGen.IrGen.new_instr;
 import static java.lang.String.format;
 import static utils.IO.writeln;
 
 public class Instr extends User {
     public BasicBlock parentBB;
+    public HashSet<Value> act_out = new HashSet<>();
 
     public Instr(Type type, String name, Value... operands) {
         // name = %id

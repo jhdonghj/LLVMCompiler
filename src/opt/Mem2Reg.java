@@ -89,6 +89,7 @@ public class Mem2Reg {
         }
         for (BasicBlock bb : rCFG.keySet()) {
             bb.preds = rCFG.get(bb);
+            bb.succs = CFG.get(bb);
         }
 //        for (BasicBlock x : CFG.keySet()) {
 //            System.out.print("CFG: " + x.name + " -> ");

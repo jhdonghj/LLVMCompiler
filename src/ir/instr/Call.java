@@ -13,6 +13,7 @@ import java.util.HashSet;
 
 import static ir.type.IntegerType.VOID_TYPE;
 import static mipsGen.MipsInfo.move;
+import static mipsGen.MipsInfo.value2reg;
 import static utils.IO.writeln;
 
 public class Call extends Instr {
@@ -54,9 +55,21 @@ public class Call extends Instr {
     public void to_mips() {
         super.to_mips();
         // store regs
+        System.out.println(parentBB.act_out.size());
+        HashSet<Regs> liveRegs = new HashSet<>();
+        for (Value value : parentBB.act_out) {
+            if (value2reg.containsKey(value.name)) {
+                liveRegs.add(value2reg.get(value.name));
+            }
+        }
+        for (Value value : parentBB.act_in) {
+            if (value2reg.containsKey(value.name)) {
+                liveRegs.add(value2reg.get(value.name));
+            }
+        }
         ArrayList<Regs> usedRegs = new ArrayList<>();
         Function func = getFunction();
-        for (Regs reg : MipsInfo.value2reg.values()) {
+        for (Regs reg : liveRegs) {
             if (func.regClosure.contains(reg) ||
                     (Regs.a0.ordinal() <= reg.ordinal() && reg.ordinal() <= Regs.a3.ordinal())) {
                 usedRegs.add(reg);
@@ -75,6 +88,7 @@ public class Call extends Instr {
         offset -= 4;
         writeln(String.format("    sw $ra, %d($sp)", offset));
         // store params
+        HashSet<Regs> modified = new HashSet<>();
         for (int i = 1; i < operands.size(); i++) {
             Value param = operands.get(i);
             if (i <= 3 || (!func.hasPrint && i <= 4)) {
@@ -88,14 +102,15 @@ public class Call extends Instr {
                     writeln(String.format("    li $%s, %d", reg, ((ConstInt) param).value));
                 } else if (MipsInfo.value2reg.containsKey(param.name)) {
                     Regs src = MipsInfo.value2reg.get(param.name);
-                    if (param instanceof FuncParam) {
+                    if (param instanceof FuncParam && modified.contains(value2reg.get(param.name))) {
                         writeln(String.format("    lw $%s, %d($sp)", reg, reg2off.get(src)));
                     } else {
-                        writeln(String.format("    move $%s, $%s", reg, src));
+                        move(reg, src);
                     }
                 } else {
                     MipsInfo.load(param.type, reg, MipsInfo.value2offset.get(param.name), Regs.sp);
                 }
+                modified.add(reg);
             } else {
                 Regs reg = Regs.k0;
                 if (param instanceof ConstInt) {

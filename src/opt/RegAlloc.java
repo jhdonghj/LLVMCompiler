@@ -67,7 +67,7 @@ public class RegAlloc {
 
     private static ArrayList<Regs> getRegs() {
         return new ArrayList<>(){{
-            add(Regs.v1); add(Regs.gp); add(Regs.fp);
+            add(Regs.gp); add(Regs.fp);
             add(Regs.t0); add(Regs.t1); add(Regs.t2); add(Regs.t3); add(Regs.t4); add(Regs.t5); add(Regs.t6); add(Regs.t7); add(Regs.t8); add(Regs.t9);
             add(Regs.s0); add(Regs.s1); add(Regs.s2); add(Regs.s3); add(Regs.s4); add(Regs.s5); add(Regs.s6); add(Regs.s7);
         }};
