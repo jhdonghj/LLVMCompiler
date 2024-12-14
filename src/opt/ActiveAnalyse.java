@@ -3,6 +3,7 @@ package opt;
 import ir.*;
 import ir.instr.Instr;
 import ir.instr.Phi;
+import mipsGen.MipsInfo;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -12,6 +13,7 @@ public class ActiveAnalyse {
     private static HashMap<BasicBlock, HashSet<Value>> uses = new HashMap<>();
 
     public static void run(Program program) {
+        MipsInfo.act_flag = true;
         for (Function function : program.functions) {
             for (BasicBlock bb : function.bbs) {
                 defs.put(bb, new HashSet<>());

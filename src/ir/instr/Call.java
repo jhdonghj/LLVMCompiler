@@ -67,6 +67,7 @@ public class Call extends Instr {
                 liveRegs.add(value2reg.get(value.name));
             }
         }
+        if (!MipsInfo.act_flag) liveRegs = new HashSet<>(value2reg.values());
         ArrayList<Regs> usedRegs = new ArrayList<>();
         Function func = getFunction();
         for (Regs reg : liveRegs) {

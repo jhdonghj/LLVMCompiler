@@ -12,6 +12,7 @@ public class MipsInfo {
     public static HashMap<String, Integer> value2offset = new HashMap<>();
     public static HashMap<String, Regs> value2reg = new HashMap<>();
     public static HashMap<BasicBlock, BasicBlock> fa = new HashMap<>();
+    public static boolean act_flag = false;
 
     public static void enter(Function func) {
         cur_offset = 0;
@@ -95,6 +96,7 @@ public class MipsInfo {
     }
 
     public static BasicBlock find(BasicBlock bb) {
+        if (!fa.containsKey(bb)) return bb;
         if (fa.get(bb).equals(bb)) {
             return bb;
         }
