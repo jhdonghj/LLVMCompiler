@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import static ir.type.IntegerType.INT_TYPE;
 import static irGen.IrGen.new_func;
 import static utils.IO.writeln;
 
@@ -20,6 +21,8 @@ public class Function extends Value {
     public boolean hasPrint = false;
     public HashMap<String, Regs> value2reg = new HashMap<>();
     public HashSet<Regs> regClosure = new HashSet<>();
+    public HashMap<Regs, Integer> reg2offset = new HashMap<>();
+
     private static int var_cnt = 0;
     public static BasicBlock nxtBB;
 
@@ -73,6 +76,13 @@ public class Function extends Value {
             }
             MipsInfo.alloc(param.type);
             MipsInfo.value2offset.put(param.name, MipsInfo.cur_offset);
+        }
+        reg2offset = new HashMap<>();
+        for (Regs reg : value2reg.values()) {
+            if (Regs.a0.ordinal() <= reg.ordinal() && reg.ordinal() <= Regs.a3.ordinal()) continue;
+            MipsInfo.alloc(INT_TYPE);
+            reg2offset.put(reg, MipsInfo.cur_offset);
+            MipsInfo.store(INT_TYPE, reg, MipsInfo.cur_offset, Regs.sp);
         }
         for (int i = 0; i < bbs.size(); i++) {
             if (i + 1 < bbs.size()) {

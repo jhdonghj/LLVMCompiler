@@ -56,33 +56,20 @@ public class Call extends Instr {
         super.to_mips();
         // store regs
 //        System.out.println(parentBB.act_out.size());
-        HashSet<Regs> liveRegs = new HashSet<>();
-        for (Value value : parentBB.act_out) {
-            if (value2reg.containsKey(value.name)) {
-                liveRegs.add(value2reg.get(value.name));
-            }
-        }
-        for (Value value : parentBB.act_in) {
-            if (value2reg.containsKey(value.name)) {
-                liveRegs.add(value2reg.get(value.name));
-            }
-        }
-        if (!MipsInfo.act_flag) liveRegs = new HashSet<>(value2reg.values());
-        ArrayList<Regs> usedRegs = new ArrayList<>();
         Function func = getFunction();
-        for (Regs reg : liveRegs) {
-            if (func.regClosure.contains(reg) ||
-                    (Regs.a0.ordinal() <= reg.ordinal() && reg.ordinal() <= Regs.a3.ordinal())) {
-                usedRegs.add(reg);
-            }
+        ArrayList<Regs> usedRegs = new ArrayList<>();
+        for (int i = 0; i < parentBB.parentFunc.params.size(); i++) {
+            if (parentBB.parentFunc.hasPrint) {
+                if (i < 3) usedRegs.add(Regs.a1.get(i));
+            } else if (i < 4) usedRegs.add(Regs.a0.get(i));
         }
         HashMap<Regs, Integer> reg2off = new HashMap<>();
         MipsInfo.alignTo(4);
         int offset = MipsInfo.cur_offset;
-        for (Regs usedReg : usedRegs) {
+        for (Regs reg : usedRegs) {
             offset -= 4;
-            writeln(String.format("    sw $%s, %d($sp)", usedReg, offset));
-            reg2off.put(usedReg, offset);
+            writeln(String.format("    sw $%s, %d($sp)", reg, offset));
+            reg2off.put(reg, offset);
         }
         offset -= 4;
         writeln(String.format("    sw $sp, %d($sp)", offset));
