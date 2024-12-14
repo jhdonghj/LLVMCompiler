@@ -5,7 +5,6 @@ import ir.Value;
 import mipsGen.Regs;
 import mipsGen.MipsInfo;
 
-import static ir.type.IntegerType.INT_TYPE;
 import static ir.type.IntegerType.VOID_TYPE;
 import static mipsGen.MipsInfo.move;
 import static utils.IO.writeln;
@@ -49,9 +48,6 @@ public class Return extends Instr {
                     writeln(String.format("    lb $v0, %d($sp)", MipsInfo.value2offset.get(retVal.name)));
                 }
             }
-        }
-        for (Regs reg : parentBB.parentFunc.reg2offset.keySet()) {
-            MipsInfo.load(INT_TYPE, reg, parentBB.parentFunc.reg2offset.get(reg), Regs.sp);
         }
         writeln("    jr $ra");
     }
