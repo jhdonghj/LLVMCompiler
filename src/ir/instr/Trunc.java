@@ -36,15 +36,5 @@ public class Trunc extends Instr {
         }
 
         storeValue(this, reg);
-//        if (!MipsInfo.value2offset.containsKey(this.name)) {
-//            MipsInfo.alloc(destType);
-//            MipsInfo.value2offset.put(this.name, MipsInfo.cur_offset);
-//            store(destType, reg, MipsInfo.cur_offset, Regs.sp);
-//            if (destType.getByte() == 4) {
-//                writeln(String.format("    sw $%s, %d($sp)", reg, MipsInfo.cur_offset));
-//            } else {
-//                writeln(String.format("    sb $%s, %d($sp)", reg, MipsInfo.cur_offset));
-//            }
-//        }
     }
 }

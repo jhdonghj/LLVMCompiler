@@ -11,7 +11,6 @@ public class MipsInfo {
     public static int cur_offset = 0; // negative
     public static HashMap<String, Integer> value2offset = new HashMap<>();
     public static HashMap<String, Regs> value2reg = new HashMap<>();
-    public static HashMap<BasicBlock, BasicBlock> fa = new HashMap<>();
     public static boolean act_flag = false;
 
     public static void enter(Function func) {
@@ -60,7 +59,6 @@ public class MipsInfo {
     public static Regs loadAddress(Value value, Regs reg) {
         if (value instanceof GlobalVariable) {
             writeln(String.format("    la $%s, %s", reg, value.name.substring(1)));
-//            writeln(String.format("    lw $%s, %s", reg, value.name.substring(1)));
         } else if (value2reg.containsKey(value.name)) {
             reg = value2reg.get(value.name);
         } else {
@@ -93,14 +91,5 @@ public class MipsInfo {
         if (!reg1.equals(reg2)) {
             writeln(String.format("    move $%s, $%s", reg1, reg2));
         }
-    }
-
-    public static BasicBlock find(BasicBlock bb) {
-        if (!fa.containsKey(bb)) return bb;
-        if (fa.get(bb).equals(bb)) {
-            return bb;
-        }
-        fa.put(bb, find(fa.get(bb)));
-        return fa.get(bb);
     }
 }

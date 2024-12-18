@@ -37,10 +37,8 @@ public class Move extends Instr {
         Regs src = Regs.k0, dest = value2reg.getOrDefault(target.name, Regs.k0);
 
         src = loadValue(source, src);
-//        dest = loadValue(target, dest);
 
         move(dest, src);
-//        writeln(String.format("    move $%s, $%s", dest, src));
 
         storeValue(this, dest);
     }

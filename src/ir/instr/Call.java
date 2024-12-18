@@ -57,14 +57,14 @@ public class Call extends Instr {
         // store regs
 //        System.out.println(parentBB.act_out.size());
         HashSet<Regs> liveRegs = new HashSet<>();
-        for (Value value : parentBB.act_out) {
-            if (value2reg.containsKey(value.name)) {
-                liveRegs.add(value2reg.get(value.name));
+        for (String value : this.act_out) {
+            if (value2reg.containsKey(value)) {
+                liveRegs.add(value2reg.get(value));
             }
         }
-        for (Value value : parentBB.act_in) {
-            if (value2reg.containsKey(value.name)) {
-                liveRegs.add(value2reg.get(value.name));
+        for (String value : this.act_in) {
+            if (value2reg.containsKey(value)) {
+                liveRegs.add(value2reg.get(value));
             }
         }
         if (!MipsInfo.act_flag) liveRegs = new HashSet<>(value2reg.values());

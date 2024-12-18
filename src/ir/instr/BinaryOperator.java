@@ -132,7 +132,6 @@ public class BinaryOperator extends Instr {
             }
         }
 
-
         storeValue(this, target);
     }
 }

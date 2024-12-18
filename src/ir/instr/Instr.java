@@ -13,7 +13,8 @@ import static utils.IO.writeln;
 
 public class Instr extends User {
     public BasicBlock parentBB;
-    public HashSet<Value> act_out = new HashSet<>();
+    public HashSet<String> act_in = new HashSet<>();
+    public HashSet<String> act_out = new HashSet<>();
 
     public Instr(Type type, String name, Value... operands) {
         // name = %id

@@ -34,11 +34,6 @@ public class Load extends Instr {
 
         MipsInfo.load(type, target_reg, 0, pointer_reg);
 
-//        storeValue(this, target_reg);
-        if (!MipsInfo.value2reg.containsKey(this.name)) {
-            MipsInfo.alloc(type);
-            MipsInfo.value2offset.put(this.name, MipsInfo.cur_offset);
-            MipsInfo.store(type, target_reg, MipsInfo.value2offset.get(this.name), Regs.sp);
-        }
+        storeValue(this, target_reg);
     }
 }

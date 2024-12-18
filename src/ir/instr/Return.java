@@ -6,6 +6,7 @@ import mipsGen.Regs;
 import mipsGen.MipsInfo;
 
 import static ir.type.IntegerType.VOID_TYPE;
+import static mipsGen.MipsInfo.loadValue;
 import static mipsGen.MipsInfo.move;
 import static utils.IO.writeln;
 
@@ -31,23 +32,9 @@ public class Return extends Instr {
         super.to_mips();
         if (!operands.isEmpty()) {
             Value retVal = operands.get(0);
-            if (retVal instanceof ConstInt) {
-                writeln(String.format("    li $v0, %d", ((ConstInt) retVal).value));
-            } else if (MipsInfo.value2reg.containsKey(retVal.name)) {
-                move(Regs.v0, MipsInfo.value2reg.get(retVal.name));
-//                Regs reg = MipsInfo.value2reg.get(retVal.name);
-//                writeln(String.format("    move $v0, $%s", reg));
-            } else {
-                if (!MipsInfo.value2offset.containsKey(retVal.name)) {
-                    MipsInfo.alloc(retVal.type);
-                    MipsInfo.value2offset.put(retVal.name, MipsInfo.cur_offset);
-                }
-                if (retVal.type.getByte() == 4) {
-                    writeln(String.format("    lw $v0, %d($sp)", MipsInfo.value2offset.get(retVal.name)));
-                } else {
-                    writeln(String.format("    lb $v0, %d($sp)", MipsInfo.value2offset.get(retVal.name)));
-                }
-            }
+            Regs reg = Regs.v0;
+            reg = loadValue(retVal, reg);
+            move(Regs.v0, reg);
         }
         writeln("    jr $ra");
     }

@@ -62,17 +62,17 @@ public class Function extends Value {
         MipsInfo.value2reg = new HashMap<>(value2reg);
         for (int i = 0; i < params.size(); i++) {
             FuncParam param = params.get(i);
-            if (hasPrint) {
-                if (i <= 2) {
-                    MipsInfo.value2reg.put(param.name, Regs.a1.get(i));
-                }
-            } else {
-                if (i <= 3) {
-                    MipsInfo.value2reg.put(param.name, Regs.a0.get(i));
-                }
-            }
             MipsInfo.alloc(param.type);
             MipsInfo.value2offset.put(param.name, MipsInfo.cur_offset);
+            if (hasPrint) {
+                if (i >= 3 && value2reg.containsKey(param.name)) {
+                    MipsInfo.load(param.type, value2reg.get(param.name), MipsInfo.cur_offset, Regs.sp);
+                }
+            } else {
+                if (i >= 4 && value2reg.containsKey(param.name)) {
+                    MipsInfo.load(param.type, value2reg.get(param.name), MipsInfo.cur_offset, Regs.sp);
+                }
+            }
         }
         for (int i = 0; i < bbs.size(); i++) {
             if (i + 1 < bbs.size()) {

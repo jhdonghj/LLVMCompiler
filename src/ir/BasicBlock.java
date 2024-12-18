@@ -15,8 +15,6 @@ public class BasicBlock extends Value {
 
     public HashSet<BasicBlock> preds = new HashSet<>();
     public HashSet<BasicBlock> succs = new HashSet<>();
-    public HashSet<Value> act_in = new HashSet<>();
-    public HashSet<Value> act_out = new HashSet<>();
 
     public BasicBlock(String name) {
         super(new BBType(), name);

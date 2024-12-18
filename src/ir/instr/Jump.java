@@ -27,7 +27,6 @@ public class Jump extends Instr {
         super.to_mips();
         BasicBlock destBB = getDestBB();
         if (Function.nxtBB == null || !Function.nxtBB.equals(destBB)) {
-            if (Config.opt) destBB = MipsInfo.find(destBB);
             writeln(String.format("    j %s", destBB.name));
         }
     }
