@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import static ir.type.IntegerType.INT_TYPE;
 import static irGen.IrGen.new_func;
 import static utils.IO.writeln;
 
@@ -63,7 +64,11 @@ public class Function extends Value {
         MipsInfo.value2reg = new HashMap<>(value2reg);
         for (int i = 0; i < params.size(); i++) {
             FuncParam param = params.get(i);
-            MipsInfo.alloc(param.type);
+            if (!Config.opt) {
+                MipsInfo.alloc(param.type);
+            } else {
+                MipsInfo.alloc(INT_TYPE);
+            }
             MipsInfo.value2offset.put(param.name, MipsInfo.cur_offset);
             if (hasPrint) {
                 if (i >= 3 && value2reg.containsKey(param.name)) {

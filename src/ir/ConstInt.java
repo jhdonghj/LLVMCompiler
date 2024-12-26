@@ -8,5 +8,6 @@ public class ConstInt extends Value {
     public ConstInt(int value) {
         super(INT_TYPE, Integer.toString(value));
         this.value = value;
+        this.isConstant = true;
     }
 }

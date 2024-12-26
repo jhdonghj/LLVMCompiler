@@ -25,7 +25,7 @@ public class BinaryOperator extends Instr {
     private static final int N = 32;
     private static MagicNumber choose_multiplier(int d, int prec) {
         int l = 1;
-        while ((1 << l) < d) l++;
+        while ((1L << l) < d) l++;
         int sh_post = l;
         long m_low = (1L << (N + l)) / d, m_high = ((1L << (N + l)) + (1L << (N + l - prec))) / d;
         while (m_low / 2 < m_high / 2 && sh_post > 0) {
@@ -95,7 +95,8 @@ public class BinaryOperator extends Instr {
         HashSet<Op> ops = new HashSet<>(){{
             add(Op.ADD); add(Op.SUB); add(Op.SDIV); // add(Op.SREM);
         }};
-        if (Config.opt && rhs instanceof ConstInt && ops.contains(op)) {
+        // there maybe some bugs, do not use this optimization
+        if (false && rhs instanceof ConstInt && ops.contains(op)) {
             int val = ((ConstInt) rhs).value;
             switch (op) {
                 case ADD: writeln(String.format("    addiu $%s, $%s, %d", target, reg1, val)); break;
