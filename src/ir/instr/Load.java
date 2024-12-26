@@ -28,9 +28,8 @@ public class Load extends Instr {
     public void to_mips() {
         super.to_mips();
         Value ptr = operands.get(0);
-        Regs pointer_reg = Regs.k0, target_reg = MipsInfo.value2reg.getOrDefault(this.name, Regs.k0);
-
-        pointer_reg = loadAddress(ptr, pointer_reg);
+        Regs pointer_reg = loadAddress(ptr, Regs.k0);
+        Regs target_reg = MipsInfo.value2reg.getOrDefault(this.name, Regs.k0);
 
         MipsInfo.load(type, target_reg, 0, pointer_reg);
 

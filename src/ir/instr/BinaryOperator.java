@@ -1,5 +1,6 @@
 package ir.instr;
 
+import config.Config;
 import ir.ConstInt;
 import ir.Value;
 import mipsGen.Regs;
@@ -94,7 +95,7 @@ public class BinaryOperator extends Instr {
         HashSet<Op> ops = new HashSet<>(){{
             add(Op.ADD); add(Op.SUB); add(Op.SDIV); // add(Op.SREM);
         }};
-        if (rhs instanceof ConstInt && ops.contains(op)) {
+        if (Config.opt && rhs instanceof ConstInt && ops.contains(op)) {
             int val = ((ConstInt) rhs).value;
             switch (op) {
                 case ADD: writeln(String.format("    addiu $%s, $%s, %d", target, reg1, val)); break;

@@ -68,7 +68,7 @@ public class Icmp extends Instr {
                 break;
         }
 
-//        storeValue(this, target); // !!!!!! can not use this, this.type = BOOL_TYPE
+//        storeValue(this, target); // !!!!!! can not use storeValue, this.type = BOOL_TYPE
         if (!MipsInfo.value2reg.containsKey(this.name)) {
             MipsInfo.alloc(new PointerType(INT_TYPE));
             MipsInfo.value2offset.put(this.name, MipsInfo.cur_offset);

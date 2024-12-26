@@ -18,7 +18,7 @@ public class Config {
     public static String mipsOutputFile = "mips.txt";
 
     public static TaskType taskType = TaskType.MIPS;
-    public static boolean opt = true;
+    public static boolean opt = false;
 
     public static void initialize() {
         if (Files.exists(Paths.get(inputFile))) {

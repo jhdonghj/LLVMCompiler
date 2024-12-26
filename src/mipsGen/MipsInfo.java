@@ -30,6 +30,7 @@ public class MipsInfo {
     }
 
     public static Regs loadValue(Value value, Regs reg) {
+        // load value from object to reg
         if (value instanceof ConstInt) {
             writeln(String.format("    li $%s, %d", reg, ((ConstInt) value).value));
         } else if (value2reg.containsKey(value.name)) {
@@ -45,6 +46,7 @@ public class MipsInfo {
     }
 
     public static void storeValue(Value value, Regs reg) {
+        // store value from reg to object
         if (value2reg.containsKey(value.name)) {
             move(value2reg.get(value.name), reg);
         } else {

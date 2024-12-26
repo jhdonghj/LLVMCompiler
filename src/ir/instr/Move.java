@@ -33,13 +33,11 @@ public class Move extends Instr {
     @Override
     public void to_mips() {
         super.to_mips();
-        Value source = getSource(), target = getTarget();
-        Regs src = Regs.k0, dest = value2reg.getOrDefault(target.name, Regs.k0);
+        Value source = getSource();
+        Regs src = Regs.k0;
 
         src = loadValue(source, src);
 
-        move(dest, src);
-
-        storeValue(this, dest);
+        storeValue(this, src);
     }
 }

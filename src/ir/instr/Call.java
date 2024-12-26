@@ -1,5 +1,6 @@
 package ir.instr;
 
+import config.Config;
 import ir.ConstInt;
 import ir.FuncParam;
 import ir.Function;
@@ -12,8 +13,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 import static ir.type.IntegerType.VOID_TYPE;
-import static mipsGen.MipsInfo.move;
-import static mipsGen.MipsInfo.value2reg;
+import static mipsGen.MipsInfo.*;
 import static utils.IO.writeln;
 
 public class Call extends Instr {
@@ -51,11 +51,38 @@ public class Call extends Instr {
         return sb.toString();
     }
 
+    public void to_mips_no_opt() {
+        Function targetFunc = getFunction();
+        MipsInfo.alignTo(4);
+        cur_offset -= 4;
+        writeln(String.format("    sw $sp, %d($sp)", cur_offset));
+        cur_offset -= 4;
+        writeln(String.format("    sw $ra, %d($sp)", cur_offset));
+        int offset = cur_offset;
+        for (int i = 1; i < operands.size(); i++) {
+            Value value = operands.get(i);
+            FuncParam param = targetFunc.params.get(i - 1);
+            loadValue(value, Regs.k0);
+            alloc(param.type);
+            store(param.type, Regs.k0, cur_offset, Regs.sp);
+        }
+        cur_offset = offset;
+        writeln(String.format("    addi $sp, $sp, %d", cur_offset));
+        writeln(String.format("    jal %s", targetFunc.name));
+        writeln("    lw $ra, 0($sp)");
+        writeln("    lw $sp, 4($sp)");
+        if (targetFunc.retType == VOID_TYPE) return;
+        storeValue(this, Regs.v0);
+    }
+
     @Override
     public void to_mips() {
         super.to_mips();
+        if (!Config.opt) {
+            to_mips_no_opt();
+            return;
+        }
         // store regs
-//        System.out.println(parentBB.act_out.size());
         HashSet<Regs> liveRegs = new HashSet<>();
         for (String value : this.act_out) {
             if (value2reg.containsKey(value)) {
@@ -142,12 +169,6 @@ public class Call extends Instr {
         }
         if (func.retType == VOID_TYPE) return;
         // handle return value
-        if (MipsInfo.value2reg.containsKey(this.name)) {
-            move(MipsInfo.value2reg.get(this.name), Regs.v0);
-        } else {
-            MipsInfo.alloc(func.retType);
-            MipsInfo.value2offset.put(this.name, MipsInfo.cur_offset);
-            MipsInfo.store(func.retType, Regs.v0, MipsInfo.value2offset.get(this.name), Regs.sp);
-        }
+        storeValue(this, Regs.v0);
     }
 }

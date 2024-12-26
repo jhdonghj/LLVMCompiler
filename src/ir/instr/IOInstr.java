@@ -8,9 +8,8 @@ import mipsGen.Regs;
 import mipsGen.MipsInfo;
 
 import static ir.type.IntegerType.*;
-import static mipsGen.MipsInfo.move;
+import static mipsGen.MipsInfo.*;
 import static utils.IO.writeln;
-import static mipsGen.MipsInfo.loadValue;
 
 public class IOInstr extends Instr {
     public IOInstr(Type type, String name, Value... operands) {
@@ -32,15 +31,7 @@ public class IOInstr extends Instr {
             super.to_mips();
             writeln("    li $v0, 5");
             writeln("    syscall");
-            if (MipsInfo.value2reg.containsKey(this.name)) {
-                move(MipsInfo.value2reg.get(this.name), Regs.v0);
-//                Regs reg = MipsInfo.value2reg.get(this.name);
-//                writeln(String.format("    move $%s, $%s", reg, Regs.v0));
-            } else {
-                MipsInfo.alloc(new PointerType(INT_TYPE));
-                MipsInfo.value2offset.put(this.name, MipsInfo.cur_offset);
-                writeln(String.format("    sw $%s, %d($sp)", Regs.v0, MipsInfo.value2offset.get(this.name)));
-            }
+            storeValue(this, Regs.v0);
         }
     }
 
@@ -59,21 +50,14 @@ public class IOInstr extends Instr {
             super.to_mips();
             writeln("    li $v0, 12");
             writeln("    syscall");
-            if (MipsInfo.value2reg.containsKey(this.name)) {
-                move(MipsInfo.value2reg.get(this.name), Regs.v0);
-//                Regs reg = MipsInfo.value2reg.get(this.name);
-//                writeln(String.format("    move $%s, $%s", reg, Regs.v0));
-            } else {
-                MipsInfo.alloc(new PointerType(INT_TYPE));
-                MipsInfo.value2offset.put(this.name, MipsInfo.cur_offset);
-                writeln(String.format("    sw $%s, %d($sp)", Regs.v0, MipsInfo.value2offset.get(this.name)));
-            }
+            storeValue(this, Regs.v0);
         }
     }
 
     public static class PutInt extends IOInstr {
         public PutInt(String name, Value val) {
             super(VOID_TYPE, name, val);
+            parentBB.parentFunc.hasPrint = true;
         }
 
         @Override
@@ -85,8 +69,7 @@ public class IOInstr extends Instr {
         public void to_mips() {
             super.to_mips();
             Value val = operands.get(0);
-            Regs reg = Regs.a0;
-            reg = loadValue(val, reg);
+            Regs reg = loadValue(val, Regs.a0);
             move(Regs.a0, reg);
             writeln("    li $v0, 1");
             writeln("    syscall");
@@ -108,8 +91,7 @@ public class IOInstr extends Instr {
         public void to_mips() {
             super.to_mips();
             Value val = operands.get(0);
-            Regs reg = Regs.a0;
-            reg = loadValue(val, reg);
+            Regs reg = loadValue(val, Regs.a0);
             move(Regs.a0, reg);
             writeln("    li $v0, 11");
             writeln("    syscall");

@@ -8,6 +8,7 @@ import mipsGen.Regs;
 import mipsGen.MipsInfo;
 
 import static ir.type.IntegerType.VOID_TYPE;
+import static mipsGen.MipsInfo.loadValue;
 import static utils.IO.writeln;
 
 public class Branch extends Instr {
@@ -39,19 +40,11 @@ public class Branch extends Instr {
         BasicBlock thenBB = getThenBB();
         BasicBlock elseBB = getElseBB();
 
-        Regs reg;
-        if (MipsInfo.value2reg.containsKey(cond.name)) {
-            reg = MipsInfo.value2reg.get(cond.name);
-        } else {
-            reg = Regs.k0;
-            writeln(String.format("    lw $%s, %d($sp)", reg, MipsInfo.value2offset.get(cond.name)));
-        }
+        Regs reg = loadValue(cond, Regs.k0);
+
         writeln(String.format("    bne $%s, $0, %s", reg, thenBB.name));
-        if (Config.opt) {
-            if (Function.nxtBB == null || !Function.nxtBB.equals(elseBB)) {
-                writeln(String.format("    j %s", elseBB.name));
-            }
-        } else {
+
+        if (!Config.opt || Function.nxtBB == null || !Function.nxtBB.equals(elseBB)) {
             writeln(String.format("    j %s", elseBB.name));
         }
     }

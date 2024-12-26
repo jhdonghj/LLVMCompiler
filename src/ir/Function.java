@@ -1,5 +1,6 @@
 package ir;
 
+import config.Config;
 import ir.instr.Instr;
 import ir.type.FunctionType;
 import ir.type.Type;
