@@ -77,7 +77,7 @@ public class MipsInfo {
         if (type.getByte() == 4) {
             writeln(String.format("    lw $%s, %d($%s)", target_reg, offset, pointer_reg));
         } else {
-            writeln(String.format("    lb $%s, %d($%s)", target_reg, offset, pointer_reg));
+            writeln(String.format("    lbu $%s, %d($%s)", target_reg, offset, pointer_reg));
         }
     }
 

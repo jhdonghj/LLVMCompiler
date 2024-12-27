@@ -36,6 +36,7 @@ public class Compiler {
         Program program = IrGen.generate(ast);
         if (Config.opt) {
             Opt.run(program);
+//            IO.printIr(program);
         }
         if (Config.taskType == Config.TaskType.IR) {
             IO.printIr(program);

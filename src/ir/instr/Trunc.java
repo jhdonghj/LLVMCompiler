@@ -28,13 +28,14 @@ public class Trunc extends Instr {
         super.to_mips();
         Value src = operands.get(0);
         Regs reg = Regs.k0;
+        Regs target = MipsInfo.value2reg.getOrDefault(this.name, Regs.k0);
 
         reg = loadValue(src, reg);
 
         if (src.type.getByte() == 4 && destType.getByte() == 1) {
-            writeln("    andi $k0, $k0, 0xff");
+            writeln(String.format("    andi $%s, $%s, 0xff", target, reg));
         }
 
-        storeValue(this, reg);
+        storeValue(this, target);
     }
 }
