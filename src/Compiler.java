@@ -30,6 +30,7 @@ public class Compiler {
         }
         if (ErrHandler.hasErr()) {
             ErrHandler.printErrs();
+//            System.out.println("error");
             return;
         }
         Program program = IrGen.generate(ast);

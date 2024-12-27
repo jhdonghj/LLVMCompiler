@@ -5,8 +5,7 @@ import ir.type.PointerType;
 import mipsGen.Regs;
 import mipsGen.MipsInfo;
 
-import static ir.type.IntegerType.BOOL_TYPE;
-import static ir.type.IntegerType.INT_TYPE;
+import static ir.type.IntegerType.*;
 import static mipsGen.MipsInfo.storeValue;
 import static utils.IO.writeln;
 import static mipsGen.MipsInfo.loadValue;
@@ -70,9 +69,9 @@ public class Icmp extends Instr {
 
 //        storeValue(this, target); // !!!!!! can not use storeValue, this.type = BOOL_TYPE
         if (!MipsInfo.value2reg.containsKey(this.name)) {
-            MipsInfo.alloc(new PointerType(INT_TYPE));
+            MipsInfo.alloc(CHAR_TYPE);
             MipsInfo.value2offset.put(this.name, MipsInfo.cur_offset);
-            writeln(String.format("    sw $%s, %d($sp)", target, MipsInfo.value2offset.get(this.name)));
+            writeln(String.format("    sb $%s, %d($sp)", target, MipsInfo.value2offset.get(this.name)));
         }
     }
 }

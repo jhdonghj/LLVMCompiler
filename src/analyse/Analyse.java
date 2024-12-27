@@ -96,7 +96,7 @@ public class Analyse {
     public static int id;
     public static ArrayList<HashMap<String, Symbol>> table;
     public static ArrayList<Integer> tabId;
-    public static SymType cur_func;
+    public static SymType cur_func_ret_type;
     public static int loop_cnt;
     public static void enter() {
         id += 1;
@@ -113,7 +113,7 @@ public class Analyse {
     public static int cur_id() {
         return tabId.get(tabId.size() - 1);
     }
-    public static void putSymbol(String name, Symbol symbol, int line) {
+    public static void addSymbol(String name, Symbol symbol, int line) {
         if (cur_table().containsKey(name)) {
             ErrHandler.addError(new ErrInfo(ErrType.b, line));
         } else {
@@ -137,7 +137,7 @@ public class Analyse {
         id = 0;
         table = new ArrayList<>();
         tabId = new ArrayList<>();
-        cur_func = null;
+        cur_func_ret_type = null;
         loop_cnt = 0;
         enter();
         CompUnit(ast);
@@ -188,7 +188,7 @@ public class Analyse {
                 ConstInitVal(son);
             }
         }
-        putSymbol(ident.value, symbol, ident.line);
+        addSymbol(ident.value, symbol, ident.line);
     }
 
     public static void ConstInitVal(AstNode ast) {
@@ -220,7 +220,7 @@ public class Analyse {
                 InitVal(son);
             }
         }
-        putSymbol(ident.value, symbol, ident.line);
+        addSymbol(ident.value, symbol, ident.line);
     }
 
     public static void InitVal(AstNode ast) {
@@ -236,9 +236,9 @@ public class Analyse {
         Token ident = ast.get(1).token;
         SymType symType = getType(type, false, false, true);
         Symbol symbol = new Symbol(symType, ident.value);
-        putSymbol(ident.value, symbol, ident.line);
+        addSymbol(ident.value, symbol, ident.line);
         enter();
-        cur_func = symType;
+        cur_func_ret_type = symType;
         boolean is_last_ret = false;
         for (AstNode son : ast.sons) {
             if (son.type == AstType.FuncFParams) {
@@ -247,7 +247,7 @@ public class Analyse {
                 is_last_ret = Block(son);
             }
         }
-        cur_func = null;
+        cur_func_ret_type = null;
         exit();
         if (!is_last_ret && symType != SymType.VoidFunc) {
             ErrHandler.addError(new ErrInfo(ErrType.g, ast.lstLine));
@@ -256,9 +256,9 @@ public class Analyse {
 
     public static void MainFuncDef(AstNode ast) {
         enter();
-        cur_func = SymType.IntFunc;
+        cur_func_ret_type = SymType.IntFunc;
         boolean is_last_ret = Block(ast.get(4));
-        cur_func = null;
+        cur_func_ret_type = null;
         exit();
         if (!is_last_ret) {
             ErrHandler.addError(new ErrInfo(ErrType.g, ast.get(4).lstLine));
@@ -284,7 +284,7 @@ public class Analyse {
         SymType symType = getType(type, false, is_array, false);
         func.params.add(symType);
         Symbol symbol = new Symbol(symType, ident.value);
-        putSymbol(ident.value, symbol, ident.line);
+        addSymbol(ident.value, symbol, ident.line);
     }
 
     public static boolean Block(AstNode ast) {
@@ -356,7 +356,7 @@ public class Analyse {
                     has_exp = true;
                 }
             }
-            if (cur_func == SymType.VoidFunc && has_exp) {
+            if (cur_func_ret_type == SymType.VoidFunc && has_exp) {
                 ErrHandler.addError(new ErrInfo(ErrType.f, ast.get(0).line));
             }
             return true;
