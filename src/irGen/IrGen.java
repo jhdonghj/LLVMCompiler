@@ -284,7 +284,11 @@ public class IrGen {
             String str = ast.get(0).token.value;
             str = str.substring(1, str.length() - 1);
             for (int i = 0; i < str.length(); i++) {
-                values.add(new ConstInt((int) str.charAt(i)));
+                if (str.charAt(i) == '\\') {
+                    values.add(new ConstInt(slash_char(str.charAt(++i))));
+                } else {
+                    values.add(new ConstInt((int) str.charAt(i)));
+                }
             }
         }
         return values;
