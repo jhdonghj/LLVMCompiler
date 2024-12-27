@@ -203,7 +203,11 @@ public class IrGen {
             String str = ast.get(0).token.value;
             str = str.substring(1, str.length() - 1);
             for (int i = 0; i < str.length(); i++) {
-                values.add((int) str.charAt(i));
+                if (str.charAt(i) == '\\') {
+                    values.add(slash_char(str.charAt(++i)));
+                } else {
+                    values.add((int) str.charAt(i));
+                }
             }
         } else {
             for (AstNode son : ast.sons) {
@@ -582,19 +586,35 @@ public class IrGen {
             return new ConstInt(str.charAt(1));
         } else {
             // handle \a, \b, \t, \n, \v, \f, \', \", \\, \0
-            return switch (str.charAt(2)) {
-                case 'a' -> new ConstInt(7);
-                case 'b' -> new ConstInt(8);
-                case 't' -> new ConstInt(9);
-                case 'n' -> new ConstInt(10);
-                case 'v' -> new ConstInt(11);
-                case 'f' -> new ConstInt(12);
-                case '\'' -> new ConstInt(39);
-                case '\"' -> new ConstInt(34);
-                case '\\' -> new ConstInt(92);
-                default -> new ConstInt(0); // case '0'
-            };
+            return new ConstInt(slash_char(str.charAt(2)));
+//            return switch (str.charAt(2)) {
+//                case 'a' -> new ConstInt(7);
+//                case 'b' -> new ConstInt(8);
+//                case 't' -> new ConstInt(9);
+//                case 'n' -> new ConstInt(10);
+//                case 'v' -> new ConstInt(11);
+//                case 'f' -> new ConstInt(12);
+//                case '\'' -> new ConstInt(39);
+//                case '\"' -> new ConstInt(34);
+//                case '\\' -> new ConstInt(92);
+//                default -> new ConstInt(0); // case '0'
+//            };
         }
+    }
+
+    public static int slash_char(char ch) {
+        return switch (ch) {
+            case 'a' -> 7;
+            case 'b' -> 8;
+            case 't' -> 9;
+            case 'n' -> 10;
+            case 'v' -> 11;
+            case 'f' -> 12;
+            case '\'' -> 39;
+            case '\"' -> 34;
+            case '\\' -> 92;
+            default -> 0; // case '0'
+        };
     }
 
     public static Value UnaryExp(AstNode ast) {
