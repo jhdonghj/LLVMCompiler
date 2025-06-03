@@ -30,7 +30,6 @@ bin/
 .DS_Store
 
 files
-*doc*
 *.txt
 *.zip
 src/test.java
